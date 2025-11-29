@@ -1,0 +1,155 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String          @id @default(uuid())
+  email         String          @unique
+  username      String          @unique
+  passwordHash  String
+  firstName     String?
+  lastName      String?
+  avatar        String?
+  virtualCash   Float           @default(1000000)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  
+  portfolios    Portfolio[]
+  transactions  Transaction[]
+  watchlists    WatchlistItem[]
+  alerts        Alert[]
+  learningProgress LearningProgress[]
+  
+  @@map("users")
+}
+
+model Stock {
+  id            String          @id @default(uuid())
+  symbol        String          @unique
+  name          String
+  exchange      String
+  sector        String?
+  industry      String?
+  marketCap     Float?
+  lastPrice     Float?
+  change        Float?
+  changePercent Float?
+  volume        BigInt?
+  updatedAt     DateTime        @updatedAt
+  
+  portfolios    Portfolio[]
+  transactions  Transaction[]
+  watchlists    WatchlistItem[]
+  alerts        Alert[]
+  priceHistory  PriceHistory[]
+  
+  @@map("stocks")
+}
+
+model Portfolio {
+  id            String    @id @default(uuid())
+  userId        String
+  stockId       String
+  symbol        String
+  quantity      Int
+  avgPrice      Float
+  currentPrice  Float?
+  totalValue    Float?
+  profitLoss    Float?
+  profitLossPercent Float?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stock         Stock     @relation(fields: [stockId], references: [id])
+  
+  @@unique([userId, stockId])
+  @@map("portfolios")
+}
+
+model Transaction {
+  id            String    @id @default(uuid())
+  userId        String
+  stockId       String
+  symbol        String
+  type          String    // BUY or SELL
+  quantity      Int
+  price         Float
+  totalAmount   Float
+  commission    Float     @default(0)
+  createdAt     DateTime  @default(now())
+  
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stock         Stock     @relation(fields: [stockId], references: [id])
+  
+  @@map("transactions")
+}
+
+model WatchlistItem {
+  id            String    @id @default(uuid())
+  userId        String
+  stockId       String
+  symbol        String
+  addedAt       DateTime  @default(now())
+  
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stock         Stock     @relation(fields: [stockId], references: [id])
+  
+  @@unique([userId, stockId])
+  @@map("watchlist_items")
+}
+
+model Alert {
+  id            String    @id @default(uuid())
+  userId        String
+  stockId       String
+  symbol        String
+  type          String    // PRICE_ABOVE, PRICE_BELOW, VOLUME_SPIKE
+  targetValue   Float
+  isActive      Boolean   @default(true)
+  triggered     Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  triggeredAt   DateTime?
+  
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stock         Stock     @relation(fields: [stockId], references: [id])
+  
+  @@map("alerts")
+}
+
+model PriceHistory {
+  id            String    @id @default(uuid())
+  stockId       String
+  symbol        String
+  open          Float
+  high          Float
+  low           Float
+  close         Float
+  volume        BigInt
+  timestamp     DateTime
+  
+  stock         Stock     @relation(fields: [stockId], references: [id])
+  
+  @@unique([stockId, timestamp])
+  @@map("price_history")
+}
+
+model LearningProgress {
+  id            String    @id @default(uuid())
+  userId        String
+  courseId      String
+  progress      Int       @default(0)
+  completed     Boolean   @default(false)
+  startedAt     DateTime  @default(now())
+  completedAt   DateTime?
+  
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, courseId])
+  @@map("learning_progress")
+}

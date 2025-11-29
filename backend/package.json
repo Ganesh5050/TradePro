@@ -1,0 +1,44 @@
+{
+  "name": "tradepro-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/dualServer.ts",
+    "start": "tsx src/dualServer.ts",
+    "server": "tsx watch src/dualServer.ts",
+    "final": "tsx watch src/finalServer.ts",
+    "stocks": "tsx watch src/stocksServer.ts",
+    "indices": "tsx watch src/indicesServer.ts",
+    "dual": "tsx watch src/dualServer.ts",
+    "build": "tsc",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "@supabase/supabase-js": "^2.47.10",
+    "axios": "^1.7.9",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "ioredis": "^5.4.2",
+    "jsonwebtoken": "^9.0.2",
+    "node-cron": "^3.0.3",
+    "socket.io": "^4.8.1",
+    "winston": "^3.17.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/node": "^22.10.2",
+    "@types/node-cron": "^3.0.11",
+    "prisma": "^5.22.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.8.3"
+  }
+}
