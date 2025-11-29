@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/dualServer.ts",
-    "start": "tsx src/dualServer.ts",
+    "start": "npx tsx src/dualServer.ts",
     "server": "tsx watch src/dualServer.ts",
     "final": "tsx watch src/finalServer.ts",
     "stocks": "tsx watch src/stocksServer.ts",
