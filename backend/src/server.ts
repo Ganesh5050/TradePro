@@ -26,7 +26,18 @@ app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'healthy', 
     timestamp: new Date(),
-    environment: config.server.nodeEnv
+    environment: config.server.nodeEnv,
+    version: '1.0.1'
+  });
+});
+
+// Simple test endpoint
+app.get('/api/test', (req, res) => {
+  res.json({ 
+    message: 'TradePro Backend is running!',
+    timestamp: new Date(),
+    stocksUrl: config.googleSheets.stocksUrl?.substring(0, 50) + '...',
+    indicesUrl: config.googleSheets.indicesUrl?.substring(0, 50) + '...'
   });
 });
 
