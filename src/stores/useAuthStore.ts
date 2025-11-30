@@ -101,7 +101,7 @@ export const useAuthStore = create<AuthState>()(
           set({ pendingUsers });
 
           // Send verification email
-          const { error } = await supabase.auth.api.sendMagicLink({
+          const { error } = await supabase.auth.signInWithOtp({
             email,
             options: {
               emailRedirectTo: 'https://your-app.com/verify-email',
@@ -188,7 +188,7 @@ export const useAuthStore = create<AuthState>()(
           }
 
           // Send verification email
-          const { error } = await supabase.auth.api.sendMagicLink({
+          const { error } = await supabase.auth.signInWithOtp({
             email,
             options: {
               emailRedirectTo: 'https://your-app.com/verify-email',
