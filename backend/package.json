@@ -1,8 +1,8 @@
 {
   "name": "tradepro-backend",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "type": "module",
-  "description": "TradePro backend with fixed start script",
+  "description": "TradePro backend with fixed start script and production URLs",
   "scripts": {
     "dev": "tsx watch src/dualServer.ts",
     "start": "npx tsx src/dualServer.ts",
