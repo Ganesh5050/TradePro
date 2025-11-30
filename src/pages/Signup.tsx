@@ -39,11 +39,28 @@ export default function Signup() {
     setIsLoading(true);
 
     try {
-      await signup(email, password);
-      toast.success('Account created successfully!');
-      navigate('/dashboard');
+      const fullName = `${firstName} ${lastName}`.trim() || undefined;
+      const isDevelopment = import.meta.env.DEV;
+      
+      await signup(email, password, fullName);
+      
+      if (isDevelopment) {
+        // In development, auto-login and redirect to dashboard
+        toast.success('Account created successfully! (Development Mode)');
+        navigate('/dashboard');
+      } else {
+        // In production, show email verification message and redirect to login
+        toast.success('Account created! Please check your email to verify your account.');
+        navigate('/login');
+      }
     } catch (error: any) {
-      toast.error(error.message || 'Signup failed');
+      // Check if this is an email verification message (production only)
+      if (error.message.includes('check your email') || error.message.includes('verify your account')) {
+        toast.success(error.message);
+        navigate('/login');
+      } else {
+        toast.error(error.message || 'Signup failed');
+      }
     } finally {
       setIsLoading(false);
     }
