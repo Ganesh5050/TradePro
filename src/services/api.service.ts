@@ -1,4 +1,8 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
+// For localhost development, use the correct backend URL
+const isDevelopment = import.meta.env.DEV;
+const API_BASE = isDevelopment 
+  ? 'http://localhost:3001/api' 
+  : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api');
 
 export class ApiService {
   // Stocks

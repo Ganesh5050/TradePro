@@ -54,8 +54,12 @@ export const useStockStore = create<StockState>((set, get) => ({
     set({ isLoading: true });
     
     try {
-      // Fetch from backend API (which gets data from Google Sheets)
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
+      // For localhost development, use the correct backend URL
+      const isDevelopment = import.meta.env.DEV;
+      const API_BASE = isDevelopment 
+        ? 'http://localhost:3001/api' 
+        : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api');
+      
       const response = await fetch(`${API_BASE}/stocks/all`);
       const result = await response.json();
       
@@ -68,14 +72,19 @@ export const useStockStore = create<StockState>((set, get) => ({
       }
     } catch (error) {
       console.error('❌ Failed to fetch stocks from API:', error);
+      console.log('🔄 Using mock data for development');
       set({ stocks: mockStocks, isLoading: false });
     }
   },
   
   fetchIndices: async () => {
     try {
-      // Fetch indices from backend API (which gets data from Google Sheets)
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
+      // For localhost development, use the correct backend URL
+      const isDevelopment = import.meta.env.DEV;
+      const API_BASE = isDevelopment 
+        ? 'http://localhost:3001/api' 
+        : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api');
+      
       const response = await fetch(`${API_BASE}/stocks/indices/all`);
       const result = await response.json();
       

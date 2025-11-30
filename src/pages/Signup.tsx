@@ -39,22 +39,11 @@ export default function Signup() {
     setIsLoading(true);
 
     try {
-      const fullName = `${firstName} ${lastName}`.trim() || undefined;
-      await signup(email, password, fullName);
-      
-      // Show success message with email verification instruction
-      toast.success('Account created! Please check your email to verify your account.');
-      
-      // Navigate to login page instead of dashboard
-      navigate('/login');
+      await signup(email, password);
+      toast.success('Account created successfully!');
+      navigate('/dashboard');
     } catch (error: any) {
-      // Check if this is an email verification message
-      if (error.message.includes('check your email') || error.message.includes('verify your account')) {
-        toast.success(error.message);
-        navigate('/login');
-      } else {
-        toast.error(error.message || 'Signup failed');
-      }
+      toast.error(error.message || 'Signup failed');
     } finally {
       setIsLoading(false);
     }
