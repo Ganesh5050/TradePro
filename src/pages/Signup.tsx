@@ -12,6 +12,7 @@ export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { signup, verifyEmail } = useAuthStore();
   const navigate = useNavigate();
@@ -59,9 +60,9 @@ export default function Signup() {
     setIsLoading(true);
 
     try {
-      await signup(email, password);
-      toast.success('Verification email sent! Please check your email to create your account.', {
-        duration: 10000, // 10 seconds
+      const verificationCode = await signup(email, password);
+      toast.success(`Verification code: ${verificationCode}`, {
+        duration: 15000, // 15 seconds to give time to copy
         style: {
           background: '#10b981',
           color: 'white',
@@ -90,8 +91,8 @@ export default function Signup() {
   };
 
   const handleVerifyEmail = async () => {
-    if (!email || !password) {
-      toast.error('Please enter email and password first', {
+    if (!email || !password || !verificationCode) {
+      toast.error('Please enter email, password and verification code', {
         duration: 5000,
         style: {
           background: '#ef4444',
@@ -107,6 +108,39 @@ export default function Signup() {
     
     setIsLoading(true);
     try {
+      // Get pending users to check verification code
+      const pendingUsers = JSON.parse(localStorage.getItem('tradepro-pending-users') || '{}');
+      
+      if (!pendingUsers[email]) {
+        toast.error('User not found. Please signup first.', {
+          duration: 5000,
+          style: {
+            background: '#ef4444',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            fontSize: '16px',
+            fontWeight: '500',
+          }
+        });
+        return;
+      }
+
+      if (pendingUsers[email].verificationCode !== verificationCode) {
+        toast.error('Invalid verification code', {
+          duration: 5000,
+          style: {
+            background: '#ef4444',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            fontSize: '16px',
+            fontWeight: '500',
+          }
+        });
+        return;
+      }
+      
       const fullName = `${firstName} ${lastName}`.trim() || undefined;
       await verifyEmail(email, password, fullName);
       toast.success('Account created and verified! You can now login.', {
@@ -226,6 +260,22 @@ export default function Signup() {
                 required
                 className="h-14 bg-white border-gray-200 rounded-xl text-base text-gray-900 placeholder:text-gray-400 focus:border-gray-300 focus:ring-0"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="verificationCode" className="text-base font-semibold text-gray-700">
+                Verification Code
+              </Label>
+              <Input
+                id="verificationCode"
+                type="text"
+                placeholder="Enter 6-digit code"
+                value={verificationCode}
+                onChange={(e) => setVerificationCode(e.target.value)}
+                maxLength={6}
+                className="h-14 bg-white border-gray-200 rounded-xl text-base text-gray-900 placeholder:text-gray-400 focus:border-gray-300 focus:ring-0"
+              />
+              <p className="text-xs text-gray-500">Check the green notification above for your verification code</p>
             </div>
 
             <Button

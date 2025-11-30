@@ -86,10 +86,13 @@ export const useAuthStore = create<AuthState>()(
 
           // Create pending user (not in main database yet)
           const tempId = 'pending-' + Date.now();
+          const verificationCode = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit code
+          
           const pendingUser = {
             password: password,
             name: email.split('@')[0],
             tempId: tempId,
+            verificationCode: verificationCode,
             createdAt: new Date().toISOString(),
           };
 
@@ -98,6 +101,10 @@ export const useAuthStore = create<AuthState>()(
 
           // Update store state
           set({ pendingUsers });
+
+          // Return verification code for development
+          console.log(`Verification code for ${email}: ${verificationCode}`);
+          return verificationCode;
 
         } catch (error: any) {
           console.error('Signup error:', error);

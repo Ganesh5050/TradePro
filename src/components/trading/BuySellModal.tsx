@@ -39,12 +39,7 @@ export default function BuySellModal({ open, onClose, stock }: BuySellModalProps
 
     try {
       await buyStock(user.id, stock.symbol, quantity, stock.price);
-      toast.success(`Bought ${quantity} shares of ${stock.symbol}`, {
-        style: {
-          background: '#10b981',
-          color: 'white',
-        }
-      });
+      toast.success(`Bought ${quantity} shares of ${stock.symbol}`);
       onClose();
       setQuantity(1);
     } catch (error: any) {
@@ -60,12 +55,7 @@ export default function BuySellModal({ open, onClose, stock }: BuySellModalProps
 
     try {
       await sellStock(user.id, stock.symbol, quantity, stock.price);
-      toast.success(`Sold ${quantity} shares of ${stock.symbol}`, {
-        style: {
-          background: '#ef4444',
-          color: 'white',
-        }
-      });
+      toast.success(`Sold ${quantity} shares of ${stock.symbol}`);
       onClose();
       setQuantity(1);
     } catch (error: any) {
