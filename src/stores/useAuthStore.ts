@@ -37,6 +37,11 @@ export const useAuthStore = create<AuthState>()(
             const storedUsers = JSON.parse(localStorage.getItem('tradepro-users') || '{}');
             
             if (storedUsers[email] && storedUsers[email].password === password) {
+              // Check if email is verified
+              if (storedUsers[email].emailVerified === false) {
+                throw new Error('Please verify your email before logging in. Check your inbox for the verification link.');
+              }
+              
               const user: User = {
                 id: storedUsers[email].id,
                 email: email,
@@ -108,7 +113,7 @@ export const useAuthStore = create<AuthState>()(
           const isDevelopment = import.meta.env.DEV;
           
           if (isDevelopment) {
-            // Use localStorage for development
+            // Use localStorage for development but simulate email verification
             const storedUsers = JSON.parse(localStorage.getItem('tradepro-users') || '{}');
             
             if (storedUsers[email]) {
@@ -121,6 +126,7 @@ export const useAuthStore = create<AuthState>()(
               email: email,
               password: password,
               name: name || email.split('@')[0],
+              emailVerified: false, // Mark as not verified initially
             };
 
             storedUsers[email] = newUser;
@@ -135,14 +141,8 @@ export const useAuthStore = create<AuthState>()(
             };
             localStorage.setItem('tradepro-portfolios', JSON.stringify(portfolios));
 
-            const user: User = {
-              id: userId,
-              email: email,
-              name: newUser.name,
-              email_confirmed_at: new Date().toISOString(), // Auto-verify in dev
-            };
-            
-            set({ user, isAuthenticated: true, isEmailVerified: true });
+            // Don't auto-login - show email verification message
+            throw new Error('Account created! Please check your email to verify your account before logging in.');
           } else {
             // Use Supabase for production
             const { data, error } = await supabase.auth.signUp({
@@ -225,7 +225,20 @@ export const useAuthStore = create<AuthState>()(
           const isDevelopment = import.meta.env.DEV;
           
           if (isDevelopment) {
-            throw new Error('Email verification is automatic in development mode');
+            // Simulate email verification in development
+            const { user } = get();
+            if (!user?.email) {
+              throw new Error('No email address found');
+            }
+
+            // Mark email as verified in localStorage
+            const storedUsers = JSON.parse(localStorage.getItem('tradepro-users') || '{}');
+            if (storedUsers[user.email]) {
+              storedUsers[user.email].emailVerified = true;
+              localStorage.setItem('tradepro-users', JSON.stringify(storedUsers));
+            }
+            
+            return; // Success
           }
 
           const { user } = get();

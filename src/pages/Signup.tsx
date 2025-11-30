@@ -40,21 +40,14 @@ export default function Signup() {
 
     try {
       const fullName = `${firstName} ${lastName}`.trim() || undefined;
-      const isDevelopment = import.meta.env.DEV;
       
       await signup(email, password, fullName);
       
-      if (isDevelopment) {
-        // In development, auto-login and redirect to dashboard
-        toast.success('Account created successfully! (Development Mode)');
-        navigate('/dashboard');
-      } else {
-        // In production, show email verification message and redirect to login
-        toast.success('Account created! Please check your email to verify your account.');
-        navigate('/login');
-      }
+      // If we get here, it means auto-login (shouldn't happen with new logic)
+      toast.success('Account created successfully!');
+      navigate('/dashboard');
     } catch (error: any) {
-      // Check if this is an email verification message (production only)
+      // Check if this is an email verification message
       if (error.message.includes('check your email') || error.message.includes('verify your account')) {
         toast.success(error.message);
         navigate('/login');

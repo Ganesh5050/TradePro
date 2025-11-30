@@ -43,13 +43,10 @@ export default function Login() {
       toast.success('Welcome back!');
       navigate('/dashboard');
     } catch (error: any) {
-      // Check if this is an email verification error (production only)
+      // Check if this is an email verification error
       if (error.message.includes('verify your email') || error.message.includes('Email not confirmed')) {
         toast.error(error.message);
-        const isDevelopment = import.meta.env.DEV;
-        if (!isDevelopment) {
-          setShowResendOption(true);
-        }
+        setShowResendOption(true);
       } else {
         toast.error(error.message || 'Login failed');
       }
