@@ -14,10 +14,10 @@ interface AuthState {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  signup: (email: string, password: string) => Promise<void>;
+  signup: (email: string, password: string) => Promise<string>;
   checkAuth: () => Promise<void>;
   verifyEmail: (email: string, password: string, name?: string) => Promise<void>;
-  pendingUsers: { [email: string]: { password: string; name?: string; tempId: string } };
+  pendingUsers: { [email: string]: { password: string; name?: string; tempId: string; verificationCode?: string } };
 }
 
 export const useAuthStore = create<AuthState>()(
