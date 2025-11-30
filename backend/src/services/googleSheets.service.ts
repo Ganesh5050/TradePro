@@ -22,11 +22,18 @@ class GoogleSheetsService {
     try {
       console.log('📊 Fetching stocks from Google Sheets...');
       console.log('URL:', config.googleSheets.stocksUrl);
+      
       const response = await axios.get(config.googleSheets.stocksUrl, {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        }
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          'Accept': 'text/csv,text/plain,*/*'
+        },
+        timeout: 10000
       });
+      
+      console.log('Response status:', response.status);
+      console.log('Response data type:', typeof response.data);
+      console.log('Response data length:', response.data?.length || 0);
       
       if (typeof response.data === 'string' && response.data.includes('SYMBOL')) {
         const stocks = this.parseStocksCSV(response.data);
@@ -35,11 +42,12 @@ class GoogleSheetsService {
         console.log(`✅ Fetched ${stocks.length} stocks`);
         return stocks;
       } else {
-        console.error('❌ Invalid response format');
+        console.error('❌ Invalid response format. Response preview:', response.data?.substring(0, 200));
         return this.stocksCache;
       }
     } catch (error: any) {
       console.error('❌ Error fetching stocks:', error.message);
+      console.error('Error details:', error.code || error.response?.status || 'Unknown');
       return this.stocksCache;
     }
   }
@@ -53,11 +61,18 @@ class GoogleSheetsService {
     try {
       console.log('📈 Fetching indices from Google Sheets...');
       console.log('URL:', config.googleSheets.indicesUrl);
+      
       const response = await axios.get(config.googleSheets.indicesUrl, {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        }
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          'Accept': 'text/csv,text/plain,*/*'
+        },
+        timeout: 10000
       });
+      
+      console.log('Response status:', response.status);
+      console.log('Response data type:', typeof response.data);
+      console.log('Response data length:', response.data?.length || 0);
       
       if (typeof response.data === 'string') {
         const indices = this.parseIndicesCSV(response.data);
@@ -66,11 +81,12 @@ class GoogleSheetsService {
         console.log(`✅ Fetched ${indices.length} indices`);
         return indices;
       } else {
-        console.error('❌ Invalid response format');
+        console.error('❌ Invalid response format. Response preview:', response.data?.substring(0, 200));
         return this.indicesCache;
       }
     } catch (error: any) {
       console.error('❌ Error fetching indices:', error.message);
+      console.error('Error details:', error.code || error.response?.status || 'Unknown');
       return this.indicesCache;
     }
   }
