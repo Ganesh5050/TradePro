@@ -27,12 +27,32 @@ export default function Signup() {
     }
 
     if (password !== confirmPassword) {
-      toast.error('Passwords do not match');
+      toast.error('Passwords do not match', {
+        duration: 5000,
+        style: {
+          background: '#ef4444',
+          color: 'white',
+          border: 'none',
+          borderRadius: '8px',
+          fontSize: '16px',
+          fontWeight: '500',
+        }
+      });
       return;
     }
 
     if (password.length < 6) {
-      toast.error('Password must be at least 6 characters');
+      toast.error('Password must be at least 6 characters', {
+        duration: 5000,
+        style: {
+          background: '#ef4444',
+          color: 'white',
+          border: 'none',
+          borderRadius: '8px',
+          fontSize: '16px',
+          fontWeight: '500',
+        }
+      });
       return;
     }
 
@@ -40,10 +60,30 @@ export default function Signup() {
 
     try {
       await signup(email, password);
-      toast.success('Account created! Please check your email to verify your account.');
+      toast.success('Account created! Please check your email to verify your account.', {
+        duration: 10000, // 10 seconds
+        style: {
+          background: '#10b981',
+          color: 'white',
+          border: 'none',
+          borderRadius: '8px',
+          fontSize: '16px',
+          fontWeight: '500',
+        }
+      });
       // Stay on signup page as requested
     } catch (error: any) {
-      toast.error(error.message || 'Signup failed');
+      toast.error(error.message || 'Signup failed', {
+        duration: 5000,
+        style: {
+          background: '#ef4444',
+          color: 'white',
+          border: 'none',
+          borderRadius: '8px',
+          fontSize: '16px',
+          fontWeight: '500',
+        }
+      });
     } finally {
       setIsLoading(false);
     }
@@ -51,16 +91,46 @@ export default function Signup() {
 
   const handleVerifyEmail = async () => {
     if (!email) {
-      toast.error('Please enter an email address first');
+      toast.error('Please enter an email address first', {
+        duration: 5000,
+        style: {
+          background: '#ef4444',
+          color: 'white',
+          border: 'none',
+          borderRadius: '8px',
+          fontSize: '16px',
+          fontWeight: '500',
+        }
+      });
       return;
     }
     
     setIsLoading(true);
     try {
       await verifyEmail(email);
-      toast.success('Email verified! You can now login.');
+      toast.success('Email verified! You can now login.', {
+        duration: 8000, // 8 seconds
+        style: {
+          background: '#10b981',
+          color: 'white',
+          border: 'none',
+          borderRadius: '8px',
+          fontSize: '16px',
+          fontWeight: '500',
+        }
+      });
     } catch (error: any) {
-      toast.error(error.message || 'Verification failed');
+      toast.error(error.message || 'Verification failed', {
+        duration: 5000,
+        style: {
+          background: '#ef4444',
+          color: 'white',
+          border: 'none',
+          borderRadius: '8px',
+          fontSize: '16px',
+          fontWeight: '500',
+        }
+      });
     } finally {
       setIsLoading(false);
     }

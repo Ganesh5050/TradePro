@@ -29,17 +29,62 @@ export default function Login() {
           },
           isAuthenticated: true
         });
-        toast.success('Welcome back! (Demo Mode)');
+        toast.success('Welcome back! (Demo Mode)', {
+          duration: 5000,
+          style: {
+            background: '#10b981',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            fontSize: '16px',
+            fontWeight: '500',
+          }
+        });
         navigate('/dashboard');
         setIsLoading(false);
         return;
       }
 
       await login(email, password);
-      toast.success('Welcome back!');
+      toast.success('Welcome back!', {
+        duration: 5000,
+        style: {
+          background: '#10b981',
+          color: 'white',
+          border: 'none',
+          borderRadius: '8px',
+          fontSize: '16px',
+          fontWeight: '500',
+        }
+      });
       navigate('/dashboard');
     } catch (error: any) {
-      toast.error(error.message || 'Login failed');
+      // Check if this is an email confirmation error - show for 30 seconds in red
+      if (error.message.includes('Email is not confirmed') || error.message.includes('verify your email')) {
+        toast.error(error.message, {
+          duration: 30000, // 30 seconds
+          style: {
+            background: '#ef4444',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            fontSize: '16px',
+            fontWeight: '500',
+          }
+        });
+      } else {
+        toast.error(error.message || 'Login failed', {
+          duration: 5000,
+          style: {
+            background: '#ef4444',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            fontSize: '16px',
+            fontWeight: '500',
+          }
+        });
+      }
     } finally {
       setIsLoading(false);
     }
