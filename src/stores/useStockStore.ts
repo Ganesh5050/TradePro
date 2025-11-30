@@ -55,7 +55,8 @@ export const useStockStore = create<StockState>((set, get) => ({
     
     try {
       // Fetch from backend API (which gets data from Google Sheets)
-      const response = await fetch('http://localhost:3001/api/stocks/all');
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
+      const response = await fetch(`${API_BASE}/stocks/all`);
       const result = await response.json();
       
       if (result.success && result.data && result.data.length > 0) {
@@ -74,7 +75,8 @@ export const useStockStore = create<StockState>((set, get) => ({
   fetchIndices: async () => {
     try {
       // Fetch indices from backend API (which gets data from Google Sheets)
-      const response = await fetch('http://localhost:3001/api/stocks/indices/all');
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
+      const response = await fetch(`${API_BASE}/stocks/indices/all`);
       const result = await response.json();
       
       if (result.success && result.data && result.data.length > 0) {
