@@ -121,7 +121,7 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
       // Check if user has enough shares
       const holding = holdings.find(h => h.symbol === symbol);
       if (!holding || holding.quantity < quantity) {
-        throw new Error('Insufficient shares to sell');
+        throw new Error(`You don't own any shares of ${symbol}. Buy some first!`);
       }
 
       const portfolios = JSON.parse(localStorage.getItem('tradepro-portfolios') || '{}');
