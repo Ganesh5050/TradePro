@@ -42,12 +42,12 @@ export default function BuySellModal({ open, onClose, stock }: BuySellModalProps
       toast(`Bought ${quantity} shares of ${stock.symbol}`, {
         duration: 5000,
         style: {
-          background: '#10b981',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          fontSize: '16px',
-          fontWeight: '500',
+          background: '#10b981 !important',
+          color: 'white !important',
+          border: 'none !important',
+          borderRadius: '8px !important',
+          fontSize: '16px !important',
+          fontWeight: '500 !important',
         }
       });
       onClose();
@@ -68,12 +68,12 @@ export default function BuySellModal({ open, onClose, stock }: BuySellModalProps
       toast.error(`Sold ${quantity} shares of ${stock.symbol}`, {
         duration: 5000,
         style: {
-          background: '#ef4444',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          fontSize: '16px',
-          fontWeight: '500',
+          background: '#ef4444 !important',
+          color: 'white !important',
+          border: 'none !important',
+          borderRadius: '8px !important',
+          fontSize: '16px !important',
+          fontWeight: '500 !important',
         }
       });
       onClose();

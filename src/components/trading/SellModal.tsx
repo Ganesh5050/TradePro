@@ -48,12 +48,12 @@ export default function SellModal({
       toast.error(`Successfully sold ${quantity} shares of ${symbol} at ₹${currentPrice.toFixed(2)}`, {
         duration: 5000,
         style: {
-          background: '#ef4444',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          fontSize: '16px',
-          fontWeight: '500',
+          background: '#ef4444 !important',
+          color: 'white !important',
+          border: 'none !important',
+          borderRadius: '8px !important',
+          fontSize: '16px !important',
+          fontWeight: '500 !important',
         }
       });
       onClose();
