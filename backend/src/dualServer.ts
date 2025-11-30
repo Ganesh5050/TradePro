@@ -36,10 +36,14 @@ async function fetchStocksData() {
   }
 
   try {
-    const sheetUrl = process.env.GOOGLE_STOCKS_SHEET_URL || 'https://docs.google.com/spreadsheets/d/17FYJ4BMGpYFgVno379vCZHOkmqE5_gVBipy6ZYxg4c4/export?format=csv&gid=0';
-    console.log('Fetching stocks from Google Sheets...');
+    const sheetUrl = process.env.STOCKS_SHEET_URL || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTe_jvQxbvO9CPQfHWKWJNujBlPfojS8bVcCoVYCq7TGL5ovst6prSgGwt-cEdzFUoDZlBfCDkfAec9/pub?output=csv';
+    console.log('📊 Fetching stocks from Google Sheets...');
+    console.log('URL:', sheetUrl);
     const response = await fetch(sheetUrl);
     const csvText = await response.text();
+    
+    console.log('Response length:', csvText.length);
+    console.log('Response preview:', csvText.substring(0, 200));
     
     const lines = csvText.split('\n');
     const headers = lines[0].split(',').map(h => h.trim());
@@ -54,7 +58,7 @@ async function fetchStocksData() {
         });
         return stock;
       })
-      .filter(stock => stock.Symbol);
+      .filter(stock => stock.SYMBOL || stock.Symbol);
     
     lastStocksFetch = now;
     console.log(`✅ Fetched ${stocksCache.length} stocks`);
@@ -73,10 +77,14 @@ async function fetchIndicesData() {
   }
 
   try {
-    const sheetUrl = process.env.GOOGLE_INDICES_SHEET_URL || 'https://docs.google.com/spreadsheets/d/1fZPztlpXcuUy-AY8yHk1HfjrUuBdAxtBdLb6nyui8yM/export?format=csv&gid=0';
-    console.log('Fetching indices from Google Sheets...');
+    const sheetUrl = process.env.INDICES_SHEET_URL || 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRmu-1ua2OhETfc4MIcuPCs7ZDH-SMRTh2QIr3IbD35OUB1NxDfIKkLL2osGMZ76kKlU5opx722TiBz/pub?output=csv';
+    console.log('📈 Fetching indices from Google Sheets...');
+    console.log('URL:', sheetUrl);
     const response = await fetch(sheetUrl);
     const csvText = await response.text();
+    
+    console.log('Response length:', csvText.length);
+    console.log('Response preview:', csvText.substring(0, 200));
     
     const lines = csvText.split('\n');
     const headers = lines[0].split(',').map(h => h.trim());
@@ -91,7 +99,7 @@ async function fetchIndicesData() {
         });
         return index;
       })
-      .filter(index => index.Symbol);
+      .filter(index => index.SYMBOL || index.Symbol || index.INDEX);
     
     lastIndicesFetch = now;
     console.log(`✅ Fetched ${indicesCache.length} indices`);
@@ -110,6 +118,54 @@ app.get('/health', (req, res) => {
     stocks: stocksCache.length,
     indices: indicesCache.length
   });
+});
+
+// Debug endpoint to check environment variables
+app.get('/api/stocks/env', (req, res) => {
+  res.json({
+    success: true,
+    environment: {
+      stocksUrl: process.env.STOCKS_SHEET_URL || 'NOT_SET',
+      indicesUrl: process.env.INDICES_SHEET_URL || 'NOT_SET',
+      nodeEnv: process.env.NODE_ENV || 'NOT_SET',
+      port: process.env.PORT || 'NOT_SET'
+    }
+  });
+});
+
+// Debug endpoint to test URLs
+app.get('/api/stocks/debug', async (req, res) => {
+  try {
+    const stocksUrl = process.env.STOCKS_SHEET_URL || 'NOT_SET';
+    const indicesUrl = process.env.INDICES_SHEET_URL || 'NOT_SET';
+    
+    const stocksResponse = await fetch(stocksUrl);
+    const indicesResponse = await fetch(indicesUrl);
+    
+    const stocksText = await stocksResponse.text();
+    const indicesText = await indicesResponse.text();
+    
+    res.json({
+      success: true,
+      stocks: {
+        url: stocksUrl,
+        status: stocksResponse.status,
+        length: stocksText.length,
+        preview: stocksText.substring(0, 500)
+      },
+      indices: {
+        url: indicesUrl,
+        status: indicesResponse.status,
+        length: indicesText.length,
+        preview: indicesText.substring(0, 500)
+      }
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
 });
 
 // Stocks API
