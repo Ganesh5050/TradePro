@@ -14,10 +14,11 @@ interface AuthState {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  signup: (email: string, password: string) => Promise<string>;
+  signup: (email: string, password: string) => Promise<void>;
   checkAuth: () => Promise<void>;
   verifyEmail: (email: string, password: string, name?: string) => Promise<void>;
-  pendingUsers: { [email: string]: { password: string; name?: string; tempId: string; verificationCode?: string } };
+  resendVerificationEmail: (email: string) => Promise<void>;
+  pendingUsers: { [email: string]: { password: string; name?: string; tempId: string } };
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -86,13 +87,10 @@ export const useAuthStore = create<AuthState>()(
 
           // Create pending user (not in main database yet)
           const tempId = 'pending-' + Date.now();
-          const verificationCode = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit code
-          
           const pendingUser = {
             password: password,
             name: email.split('@')[0],
             tempId: tempId,
-            verificationCode: verificationCode,
             createdAt: new Date().toISOString(),
           };
 
@@ -102,9 +100,17 @@ export const useAuthStore = create<AuthState>()(
           // Update store state
           set({ pendingUsers });
 
-          // Return verification code for development
-          console.log(`Verification code for ${email}: ${verificationCode}`);
-          return verificationCode;
+          // Send verification email
+          const { error } = await supabase.auth.api.sendMagicLink({
+            email,
+            options: {
+              emailRedirectTo: 'https://your-app.com/verify-email',
+            },
+          });
+
+          if (error) {
+            throw new Error(error.message);
+          }
 
         } catch (error: any) {
           console.error('Signup error:', error);
@@ -169,6 +175,33 @@ export const useAuthStore = create<AuthState>()(
         } catch (error: any) {
           console.error('Email verification error:', error);
           throw new Error(error.message || 'Email verification failed');
+        }
+      },
+
+      resendVerificationEmail: async (email: string) => {
+        try {
+          // Get pending users
+          const pendingUsers = JSON.parse(localStorage.getItem('tradepro-pending-users') || '{}');
+          
+          if (!pendingUsers[email]) {
+            throw new Error('Email not found. Please signup first.');
+          }
+
+          // Send verification email
+          const { error } = await supabase.auth.api.sendMagicLink({
+            email,
+            options: {
+              emailRedirectTo: 'https://your-app.com/verify-email',
+            },
+          });
+
+          if (error) {
+            throw new Error(error.message);
+          }
+
+        } catch (error: any) {
+          console.error('Resend verification email error:', error);
+          throw new Error(error.message || 'Failed to resend verification email');
         }
       },
     }),
