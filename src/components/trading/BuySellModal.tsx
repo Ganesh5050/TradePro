@@ -38,7 +38,7 @@ export default function BuySellModal({ open, onClose, stock }: BuySellModalProps
     }
 
     try {
-      await buyStock(user.id, stock.symbol, quantity, stock.price);
+      await buyStock(user.id, stock.symbol, stock.name, quantity, stock.price);
       toast(`Bought ${quantity} shares of ${stock.symbol}`, {
         duration: 5000,
         style: {
@@ -64,7 +64,7 @@ export default function BuySellModal({ open, onClose, stock }: BuySellModalProps
     }
 
     try {
-      await sellStock(user.id, stock.symbol, quantity, stock.price);
+      await sellStock(user.id, stock.symbol, stock.name, quantity, stock.price);
       toast.error(`Sold ${quantity} shares of ${stock.symbol}`, {
         duration: 5000,
         style: {
