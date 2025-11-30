@@ -5,6 +5,28 @@ import { config } from '../config/env';
 
 const router = Router();
 
+// Debug endpoint to check environment variables
+router.get('/env', async (req, res) => {
+  try {
+    const result = {
+      success: true,
+      environment: {
+        stocksUrl: process.env.STOCKS_SHEET_URL || 'NOT_SET',
+        indicesUrl: process.env.INDICES_SHEET_URL || 'NOT_SET',
+        supabaseUrl: process.env.SUPABASE_URL || 'NOT_SET',
+        nodeEnv: process.env.NODE_ENV || 'NOT_SET',
+        port: process.env.PORT || 'NOT_SET'
+      }
+    };
+    res.json(result);
+  } catch (error: any) {
+    res.status(500).json({ 
+      success: false, 
+      error: error.message 
+    });
+  }
+});
+
 // Debug endpoint to test Google Sheets URLs
 router.get('/debug', async (req, res) => {
   try {
