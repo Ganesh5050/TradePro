@@ -13,7 +13,7 @@ export default function Signup() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { signup } = useAuthStore();
+  const { signup, verifyEmail } = useAuthStore();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -39,21 +39,28 @@ export default function Signup() {
     setIsLoading(true);
 
     try {
-      const fullName = `${firstName} ${lastName}`.trim() || undefined;
-      
-      await signup(email, password, fullName);
-      
-      // If we get here, it means auto-login (shouldn't happen with new logic)
-      toast.success('Account created successfully!');
-      navigate('/dashboard');
+      await signup(email, password);
+      toast.success('Account created! Please check your email to verify your account.');
+      // Stay on signup page as requested
     } catch (error: any) {
-      // Check if this is an email verification message
-      if (error.message.includes('check your email') || error.message.includes('verify your account')) {
-        toast.success(error.message);
-        navigate('/login');
-      } else {
-        toast.error(error.message || 'Signup failed');
-      }
+      toast.error(error.message || 'Signup failed');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleVerifyEmail = async () => {
+    if (!email) {
+      toast.error('Please enter an email address first');
+      return;
+    }
+    
+    setIsLoading(true);
+    try {
+      await verifyEmail(email);
+      toast.success('Email verified! You can now login.');
+    } catch (error: any) {
+      toast.error(error.message || 'Verification failed');
     } finally {
       setIsLoading(false);
     }
@@ -157,6 +164,17 @@ export default function Signup() {
               className="w-full h-14 bg-black text-white hover:bg-black/95 font-medium text-base rounded-xl mt-6"
             >
               {isLoading ? 'Creating account...' : 'Continue'}
+            </Button>
+
+            {/* Verify Email Button */}
+            <Button
+              type="button"
+              onClick={handleVerifyEmail}
+              disabled={isLoading}
+              variant="outline"
+              className="w-full h-12 bg-green-50 border-green-200 text-green-700 hover:bg-green-100 font-medium text-sm rounded-xl mt-3"
+            >
+              {isLoading ? 'Verifying...' : 'Verify Email (for testing)'}
             </Button>
 
             <div className="relative my-8">

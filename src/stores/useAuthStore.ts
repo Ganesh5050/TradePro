@@ -6,86 +6,45 @@ interface User {
   id: string;
   email: string;
   name?: string;
-  email_confirmed_at?: string;
+  emailVerified?: boolean;
 }
 
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
-  isEmailVerified: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  signup: (email: string, password: string, name?: string) => Promise<void>;
+  signup: (email: string, password: string) => Promise<void>;
   checkAuth: () => Promise<void>;
-  resendVerification: () => Promise<void>;
+  verifyEmail: (email: string) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       user: null,
       isAuthenticated: false,
-      isEmailVerified: false,
   
       login: async (email: string, password: string) => {
         try {
-          // Check if we're in development mode and using localhost
-          const isDevelopment = import.meta.env.DEV;
+          // Get stored users from localStorage
+          const storedUsers = JSON.parse(localStorage.getItem('tradepro-users') || '{}');
           
-          if (isDevelopment) {
-            // Use localStorage for development
-            const storedUsers = JSON.parse(localStorage.getItem('tradepro-users') || '{}');
+          if (storedUsers[email] && storedUsers[email].password === password) {
+            // Check if email is verified
+            if (!storedUsers[email].emailVerified) {
+              throw new Error('Email is not confirmed. Please verify your email.');
+            }
             
-            if (storedUsers[email] && storedUsers[email].password === password) {
-              // Check if email is verified
-              if (storedUsers[email].emailVerified === false) {
-                throw new Error('Please verify your email before logging in. Check your inbox for the verification link.');
-              }
-              
-              const user: User = {
-                id: storedUsers[email].id,
-                email: email,
-                name: storedUsers[email].name,
-                email_confirmed_at: new Date().toISOString(), // Auto-verify in dev
-              };
-              set({ user, isAuthenticated: true, isEmailVerified: true });
-            } else {
-              throw new Error('Invalid email or password');
-            }
+            const user: User = {
+              id: storedUsers[email].id,
+              email: email,
+              name: storedUsers[email].name,
+              emailVerified: storedUsers[email].emailVerified,
+            };
+            set({ user, isAuthenticated: true });
           } else {
-            // Use Supabase for production
-            const { data, error } = await supabase.auth.signInWithPassword({
-              email,
-              password,
-            });
-
-            if (error) {
-              if (error.message.includes('Email not confirmed')) {
-                throw new Error('Please verify your email before logging in. Check your inbox for the verification link.');
-              }
-              throw new Error(error.message);
-            }
-
-            if (data.user) {
-              const isVerified = !!data.user.email_confirmed_at;
-              
-              if (!isVerified) {
-                throw new Error('Please verify your email before logging in. Check your inbox for the verification link.');
-              }
-
-              const user: User = {
-                id: data.user.id,
-                email: data.user.email!,
-                name: data.user.user_metadata?.name || email.split('@')[0],
-                email_confirmed_at: data.user.email_confirmed_at,
-              };
-              
-              set({ 
-                user, 
-                isAuthenticated: true, 
-                isEmailVerified: true 
-              });
-            }
+            throw new Error('Invalid email or password');
           }
         } catch (error: any) {
           console.error('Login error:', error);
@@ -95,90 +54,45 @@ export const useAuthStore = create<AuthState>()(
   
       logout: async () => {
         try {
-          const isDevelopment = import.meta.env.DEV;
-          
-          if (!isDevelopment) {
-            await supabase.auth.signOut();
-          }
-          
-          set({ user: null, isAuthenticated: false, isEmailVerified: false });
+          set({ user: null, isAuthenticated: false });
         } catch (error) {
           console.error('Logout error:', error);
-          set({ user: null, isAuthenticated: false, isEmailVerified: false });
         }
       },
   
-      signup: async (email: string, password: string, name?: string) => {
+      signup: async (email: string, password: string) => {
         try {
-          const isDevelopment = import.meta.env.DEV;
+          // Get stored users from localStorage
+          const storedUsers = JSON.parse(localStorage.getItem('tradepro-users') || '{}');
           
-          if (isDevelopment) {
-            // Use localStorage for development but simulate email verification
-            const storedUsers = JSON.parse(localStorage.getItem('tradepro-users') || '{}');
-            
-            if (storedUsers[email]) {
-              throw new Error('User already exists');
-            }
-
-            const userId = 'user-' + Date.now();
-            const newUser = {
-              id: userId,
-              email: email,
-              password: password,
-              name: name || email.split('@')[0],
-              emailVerified: false, // Mark as not verified initially
-            };
-
-            storedUsers[email] = newUser;
-            localStorage.setItem('tradepro-users', JSON.stringify(storedUsers));
-
-            // Create initial portfolio
-            const portfolios = JSON.parse(localStorage.getItem('tradepro-portfolios') || '{}');
-            portfolios[userId] = {
-              balance: 100000,
-              holdings: [],
-              transactions: [],
-            };
-            localStorage.setItem('tradepro-portfolios', JSON.stringify(portfolios));
-
-            // Don't auto-login - show email verification message
-            throw new Error('Account created! Please check your email to verify your account before logging in.');
-          } else {
-            // Use Supabase for production
-            const { data, error } = await supabase.auth.signUp({
-              email,
-              password,
-              options: {
-                data: {
-                  name: name || email.split('@')[0],
-                },
-              },
-            });
-
-            if (error) {
-              throw new Error(error.message);
-            }
-
-            if (data.user && !data.session) {
-              // Email confirmation required
-              throw new Error('Account created! Please check your email to verify your account before logging in.');
-            }
-
-            if (data.user && data.session) {
-              const user: User = {
-                id: data.user.id,
-                email: data.user.email!,
-                name: data.user.user_metadata?.name || email.split('@')[0],
-                email_confirmed_at: data.user.email_confirmed_at,
-              };
-              
-              set({ 
-                user, 
-                isAuthenticated: true, 
-                isEmailVerified: !!data.user.email_confirmed_at 
-              });
-            }
+          // Check if user already exists
+          if (storedUsers[email]) {
+            throw new Error('User already exists');
           }
+
+          // Create new user
+          const userId = 'user-' + Date.now();
+          const newUser = {
+            id: userId,
+            email: email,
+            password: password,
+            name: email.split('@')[0],
+            emailVerified: false, // Start as unverified
+          };
+
+          storedUsers[email] = newUser;
+          localStorage.setItem('tradepro-users', JSON.stringify(storedUsers));
+
+          // Create initial portfolio
+          const portfolios = JSON.parse(localStorage.getItem('tradepro-portfolios') || '{}');
+          portfolios[userId] = {
+            balance: 100000,
+            holdings: [],
+            transactions: [],
+          };
+          localStorage.setItem('tradepro-portfolios', JSON.stringify(portfolios));
+
+          // Don't auto-login - user needs to verify email first
         } catch (error: any) {
           console.error('Signup error:', error);
           throw new Error(error.message || 'Signup failed');
@@ -186,77 +100,24 @@ export const useAuthStore = create<AuthState>()(
       },
 
       checkAuth: async () => {
-        try {
-          const isDevelopment = import.meta.env.DEV;
-          
-          if (isDevelopment) {
-            // Auth is persisted via zustand persist middleware in development
-            return;
-          } else {
-            // Check Supabase session in production
-            const { data: { session } } = await supabase.auth.getSession();
-            
-            if (session?.user) {
-              const isVerified = !!session.user.email_confirmed_at;
-              const user: User = {
-                id: session.user.id,
-                email: session.user.email!,
-                name: session.user.user_metadata?.name || session.user.email!.split('@')[0],
-                email_confirmed_at: session.user.email_confirmed_at,
-              };
-              
-              set({ 
-                user, 
-                isAuthenticated: true, 
-                isEmailVerified: isVerified 
-              });
-            } else {
-              set({ user: null, isAuthenticated: false, isEmailVerified: false });
-            }
-          }
-        } catch (error) {
-          console.error('Auth check error:', error);
-          set({ user: null, isAuthenticated: false, isEmailVerified: false });
-        }
+        // Auth is persisted via zustand persist middleware
+        // No need to check Supabase session
       },
 
-      resendVerification: async () => {
+      verifyEmail: async (email: string) => {
         try {
-          const isDevelopment = import.meta.env.DEV;
+          // Get stored users from localStorage
+          const storedUsers = JSON.parse(localStorage.getItem('tradepro-users') || '{}');
           
-          if (isDevelopment) {
-            // Simulate email verification in development
-            const { user } = get();
-            if (!user?.email) {
-              throw new Error('No email address found');
-            }
-
-            // Mark email as verified in localStorage
-            const storedUsers = JSON.parse(localStorage.getItem('tradepro-users') || '{}');
-            if (storedUsers[user.email]) {
-              storedUsers[user.email].emailVerified = true;
-              localStorage.setItem('tradepro-users', JSON.stringify(storedUsers));
-            }
-            
-            return; // Success
-          }
-
-          const { user } = get();
-          if (!user?.email) {
-            throw new Error('No email address found');
-          }
-
-          const { error } = await supabase.auth.resend({
-            type: 'signup',
-            email: user.email,
-          });
-
-          if (error) {
-            throw new Error(error.message);
+          if (storedUsers[email]) {
+            storedUsers[email].emailVerified = true;
+            localStorage.setItem('tradepro-users', JSON.stringify(storedUsers));
+          } else {
+            throw new Error('User not found');
           }
         } catch (error: any) {
-          console.error('Resend verification error:', error);
-          throw new Error(error.message || 'Failed to resend verification email');
+          console.error('Email verification error:', error);
+          throw new Error(error.message || 'Email verification failed');
         }
       },
     }),

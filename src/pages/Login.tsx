@@ -10,14 +10,12 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showResendOption, setShowResendOption] = useState(false);
-  const { login, resendVerification } = useAuthStore();
+  const { login } = useAuthStore();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setShowResendOption(false);
 
     try {
       // Demo bypass login - set demo user in store
@@ -27,11 +25,9 @@ export default function Login() {
           user: {
             id: 'demo-user-123',
             email: 'demo@gmail.com',
-            name: 'Demo User',
-            email_confirmed_at: new Date().toISOString()
+            name: 'Demo User'
           },
-          isAuthenticated: true,
-          isEmailVerified: true
+          isAuthenticated: true
         });
         toast.success('Welcome back! (Demo Mode)');
         navigate('/dashboard');
@@ -43,25 +39,7 @@ export default function Login() {
       toast.success('Welcome back!');
       navigate('/dashboard');
     } catch (error: any) {
-      // Check if this is an email verification error
-      if (error.message.includes('verify your email') || error.message.includes('Email not confirmed')) {
-        toast.error(error.message);
-        setShowResendOption(true);
-      } else {
-        toast.error(error.message || 'Login failed');
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleResendVerification = async () => {
-    setIsLoading(true);
-    try {
-      await resendVerification();
-      toast.success('Verification email sent! Please check your inbox.');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to resend verification email');
+      toast.error(error.message || 'Login failed');
     } finally {
       setIsLoading(false);
     }
@@ -122,19 +100,6 @@ export default function Login() {
             >
               {isLoading ? 'Signing in...' : 'Continue with Email'}
             </Button>
-
-            {/* Resend Verification Button - Only show when email verification error occurs */}
-            {showResendOption && (
-              <Button
-                type="button"
-                onClick={handleResendVerification}
-                disabled={isLoading}
-                variant="outline"
-                className="w-full h-12 bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100 font-medium text-sm rounded-xl mt-3"
-              >
-                {isLoading ? 'Sending...' : 'Resend Verification Email'}
-              </Button>
-            )}
 
             {/* Divider */}
             <div className="relative my-8">
