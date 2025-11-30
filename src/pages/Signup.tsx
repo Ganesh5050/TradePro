@@ -60,7 +60,7 @@ export default function Signup() {
 
     try {
       await signup(email, password);
-      toast.success('Account created! Please check your email to verify your account.', {
+      toast.success('Verification email sent! Please check your email to create your account.', {
         duration: 10000, // 10 seconds
         style: {
           background: '#10b981',
@@ -90,8 +90,8 @@ export default function Signup() {
   };
 
   const handleVerifyEmail = async () => {
-    if (!email) {
-      toast.error('Please enter an email address first', {
+    if (!email || !password) {
+      toast.error('Please enter email and password first', {
         duration: 5000,
         style: {
           background: '#ef4444',
@@ -107,8 +107,9 @@ export default function Signup() {
     
     setIsLoading(true);
     try {
-      await verifyEmail(email);
-      toast.success('Email verified! You can now login.', {
+      const fullName = `${firstName} ${lastName}`.trim() || undefined;
+      await verifyEmail(email, password, fullName);
+      toast.success('Account created and verified! You can now login.', {
         duration: 8000, // 8 seconds
         style: {
           background: '#10b981',
