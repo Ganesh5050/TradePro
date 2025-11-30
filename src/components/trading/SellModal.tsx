@@ -45,7 +45,7 @@ export default function SellModal({
     setIsProcessing(true);
     try {
       await sellStock(user.id, symbol, stockName, quantity, currentPrice);
-      toast.error(`${quantity} shares of ${symbol} sold successfully at ₹${currentPrice.toFixed(2)}!`, {
+      toast.success(`Successfully sold ${quantity} shares of ${symbol} at ₹${currentPrice.toFixed(2)}`, {
         duration: 5000,
         style: {
           background: '#ef4444',
