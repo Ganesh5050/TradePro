@@ -28,57 +28,27 @@ export default function SellModal({
 
   const handleSell = async () => {
     if (!user) {
-      toast.error('Please login to trade', {
-        duration: 5000,
-        style: {
-          background: '#ef4444',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          fontSize: '16px',
-          fontWeight: '500',
-        }
-      });
+      toast.error('Please login to trade');
       return;
     }
 
     if (quantity < 1) {
-      toast.error('Quantity must be at least 1', {
-        duration: 5000,
-        style: {
-          background: '#ef4444',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          fontSize: '16px',
-          fontWeight: '500',
-        }
-      });
+      toast.error('Quantity must be at least 1');
       return;
     }
 
     if (quantity > availableQuantity) {
-      toast.error(`Not enough shares to sell! You only have ${availableQuantity} shares of ${symbol}`, {
-        duration: 5000,
-        style: {
-          background: '#ef4444',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          fontSize: '16px',
-          fontWeight: '500',
-        }
-      });
+      toast.error(`Not enough quantity to sell! You only have ${availableQuantity} shares`);
       return;
     }
 
     setIsProcessing(true);
     try {
       await sellStock(user.id, symbol, stockName, quantity, currentPrice);
-      toast.success(`${quantity} shares of ${symbol} sold successfully at ₹${currentPrice.toFixed(2)}!`, {
+      toast.error(`${quantity} shares of ${symbol} sold successfully at ₹${currentPrice.toFixed(2)}!`, {
         duration: 5000,
         style: {
-          background: '#10b981',
+          background: '#ef4444',
           color: 'white',
           border: 'none',
           borderRadius: '8px',
@@ -88,17 +58,7 @@ export default function SellModal({
       });
       onClose();
     } catch (error: any) {
-      toast.error(error.message || 'Failed to sell stock', {
-        duration: 5000,
-        style: {
-          background: '#ef4444',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          fontSize: '16px',
-          fontWeight: '500',
-        }
-      });
+      toast.error(error.message || 'Failed to sell stock');
     } finally {
       setIsProcessing(false);
     }

@@ -28,32 +28,12 @@ export default function BuySellModal({ open, onClose, stock }: BuySellModalProps
 
   const handleBuy = async () => {
     if (!user) {
-      toast.error('Please login first', {
-        duration: 5000,
-        style: {
-          background: '#ef4444',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          fontSize: '16px',
-          fontWeight: '500',
-        }
-      });
+      toast.error('Please login first');
       return;
     }
 
     if (total > balance) {
-      toast.error('Insufficient balance for this purchase', {
-        duration: 5000,
-        style: {
-          background: '#ef4444',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          fontSize: '16px',
-          fontWeight: '500',
-        }
-      });
+      toast.error('Insufficient balance');
       return;
     }
 
@@ -73,42 +53,22 @@ export default function BuySellModal({ open, onClose, stock }: BuySellModalProps
       onClose();
       setQuantity(1);
     } catch (error: any) {
-      toast.error(error.message || 'Failed to buy stock', {
-        duration: 5000,
-        style: {
-          background: '#ef4444',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          fontSize: '16px',
-          fontWeight: '500',
-        }
-      });
+      toast.error(error.message || 'Failed to buy stock');
     }
   };
 
   const handleSell = async () => {
     if (!user) {
-      toast.error('Please login first', {
-        duration: 5000,
-        style: {
-          background: '#ef4444',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          fontSize: '16px',
-          fontWeight: '500',
-        }
-      });
+      toast.error('Please login first');
       return;
     }
 
     try {
       await sellStock(user.id, stock.symbol, stock.name, quantity, stock.price);
-      toast.success(`${quantity} shares of ${stock.symbol} sold successfully!`, {
+      toast.error(`${quantity} shares of ${stock.symbol} sold successfully!`, {
         duration: 5000,
         style: {
-          background: '#10b981',
+          background: '#ef4444',
           color: 'white',
           border: 'none',
           borderRadius: '8px',
@@ -119,17 +79,7 @@ export default function BuySellModal({ open, onClose, stock }: BuySellModalProps
       onClose();
       setQuantity(1);
     } catch (error: any) {
-      toast.error(error.message || 'Failed to sell stock', {
-        duration: 5000,
-        style: {
-          background: '#ef4444',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          fontSize: '16px',
-          fontWeight: '500',
-        }
-      });
+      toast.error(error.message || 'Failed to sell stock');
     }
   };
 
