@@ -1,7 +1,67 @@
 import { Router } from 'express';
 import { googleSheetsService } from '../services/googleSheets.service';
+import axios from 'axios';
+import { config } from '../config/env';
 
 const router = Router();
+
+// Debug endpoint to test Google Sheets URLs
+router.get('/debug', async (req, res) => {
+  try {
+    console.log('🔍 Debug: Testing Google Sheets URLs...');
+    
+    const stocksUrl = config.googleSheets.stocksUrl;
+    const indicesUrl = config.googleSheets.indicesUrl;
+    
+    console.log('Stocks URL:', stocksUrl);
+    console.log('Indices URL:', indicesUrl);
+    
+    // Test stocks URL
+    const stocksResponse = await axios.get(stocksUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': 'text/csv,text/plain,*/*'
+      },
+      timeout: 10000
+    });
+    
+    // Test indices URL
+    const indicesResponse = await axios.get(indicesUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': 'text/csv,text/plain,*/*'
+      },
+      timeout: 10000
+    });
+    
+    const result = {
+      success: true,
+      stocks: {
+        url: stocksUrl,
+        status: stocksResponse.status,
+        contentType: stocksResponse.headers['content-type'],
+        dataLength: stocksResponse.data?.length || 0,
+        preview: stocksResponse.data?.substring(0, 500) || 'No data'
+      },
+      indices: {
+        url: indicesUrl,
+        status: indicesResponse.status,
+        contentType: indicesResponse.headers['content-type'],
+        dataLength: indicesResponse.data?.length || 0,
+        preview: indicesResponse.data?.substring(0, 500) || 'No data'
+      }
+    };
+    
+    res.json(result);
+  } catch (error: any) {
+    console.error('Debug error:', error.message);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message,
+      details: error.code || error.response?.status || 'Unknown'
+    });
+  }
+});
 
 // Get all stocks
 router.get('/all', async (req, res) => {
