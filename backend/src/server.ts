@@ -65,11 +65,14 @@ setInterval(async () => {
 
 // Start server
 app.listen(PORT, () => {
+  const isProduction = config.server.nodeEnv === 'production';
+  const baseUrl = isProduction ? 'https://trade-pro-backend.onrender.com' : `http://localhost:${PORT}`;
+  
   console.log('╔════════════════════════════════════════════╗');
   console.log('║   TradePro Elite Backend API Server       ║');
   console.log('╚════════════════════════════════════════════╝');
-  console.log(`🚀 Server: http://localhost:${PORT}`);
-  console.log(`💚 Health: http://localhost:${PORT}/api/health`);
+  console.log(`🚀 Server: ${baseUrl}`);
+  console.log(`💚 Health: ${baseUrl}/api/health`);
   console.log('');
   console.log('📡 API Endpoints:');
   console.log('   Stocks:');
