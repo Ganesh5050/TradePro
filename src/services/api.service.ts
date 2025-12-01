@@ -2,7 +2,7 @@
 const isDevelopment = import.meta.env.DEV;
 const API_BASE = isDevelopment 
   ? 'http://localhost:3001/api' 
-  : ''; // Use relative URL for Vercel serverless functions
+  : 'https://trade-pro-backend.onrender.com/api'; // Use Render backend for Vercel
 
 // Mock data fallback when backend is not available
 const mockStocks = [
