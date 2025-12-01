@@ -23,7 +23,9 @@ export class ApiService {
   private async fetchWithFallback(url: string, fallbackData: any) {
     try {
       const fullUrl = `${API_BASE}${url}`;
-      console.log('🔍 Fetching from:', fullUrl);
+      console.log('🔍 API_BASE:', API_BASE);
+      console.log('🔍 URL:', url);
+      console.log('🔍 Full URL:', fullUrl);
       
       const res = await fetch(fullUrl);
       if (!res.ok) throw new Error('Backend not available');
