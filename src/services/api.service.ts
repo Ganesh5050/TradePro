@@ -22,7 +22,7 @@ const mockIndices = [
 export class ApiService {
   private async fetchWithFallback(url: string, fallbackData: any) {
     try {
-      const fullUrl = isDevelopment ? `${API_BASE}${url}` : url;
+      const fullUrl = `${API_BASE}${url}`;
       console.log('🔍 Fetching from:', fullUrl);
       
       const res = await fetch(fullUrl);
