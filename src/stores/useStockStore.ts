@@ -58,8 +58,9 @@ export const useStockStore = create<StockState>((set, get) => ({
       const isDevelopment = import.meta.env.DEV;
       const API_BASE = isDevelopment 
         ? 'http://localhost:3001/api' 
-        : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api');
+        : 'https://trade-pro-backend.onrender.com/api';
       
+      console.log('🔍 Stock Store API_BASE:', API_BASE);
       const response = await fetch(`${API_BASE}/stocks/all`);
       const result = await response.json();
       
@@ -83,8 +84,9 @@ export const useStockStore = create<StockState>((set, get) => ({
       const isDevelopment = import.meta.env.DEV;
       const API_BASE = isDevelopment 
         ? 'http://localhost:3001/api' 
-        : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api');
+        : 'https://trade-pro-backend.onrender.com/api';
       
+      console.log('🔍 Indices Store API_BASE:', API_BASE);
       const response = await fetch(`${API_BASE}/stocks/indices/all`);
       const result = await response.json();
       
