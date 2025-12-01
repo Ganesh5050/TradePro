@@ -9,9 +9,17 @@
       "config": {
         "distDir": "dist"
       }
+    },
+    {
+      "src": "api/*.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
     {
       "src": "/assets/(.*)",
       "headers": { "cache-control": "s-maxage=31536000,immutable" },

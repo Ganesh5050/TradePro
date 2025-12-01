@@ -9,6 +9,7 @@ import Navbar from "./components/layout/Navbar";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import VerifyEmail from "./pages/VerifyEmail";
 import Dashboard from "./pages/Dashboard";
 import StockDetail from "./pages/StockDetail";
 import IndexDetail from "./pages/IndexDetail";
@@ -63,6 +64,7 @@ const AppContent = () => {
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/stock/:symbol" element={<StockDetail />} />
         <Route path="/index/:symbol" element={<IndexDetail />} />

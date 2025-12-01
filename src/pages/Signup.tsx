@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { supabase } from '@/config/supabase';
 
 export default function Signup() {
   const [firstName, setFirstName] = useState('');
@@ -13,11 +14,25 @@ export default function Signup() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { signup, verifyEmail, resendVerificationEmail } = useAuthStore();
+  const { signup, verifyEmail } = useAuthStore();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Debug environment variables
+    console.log('🔍 DEBUGGING SUPABASE CONFIGURATION:');
+    console.log('VITE_SUPABASE_URL:', import.meta.env.VITE_SUPABASE_URL);
+    console.log('VITE_SUPABASE_ANON_KEY exists:', !!import.meta.env.VITE_SUPABASE_ANON_KEY);
+    console.log('VITE_SUPABASE_ANON_KEY length:', import.meta.env.VITE_SUPABASE_ANON_KEY?.length);
+    
+    // Test Supabase connection
+    try {
+      const { data, error } = await supabase.from('_test_connection').select('*').limit(1);
+      console.log('🔌 Supabase connection test:', { data, error });
+    } catch (testError) {
+      console.error('❌ Supabase connection failed:', testError);
+    }
 
     // Demo bypass signup
     if (email === 'demo@gmail.com') {
@@ -61,125 +76,11 @@ export default function Signup() {
     try {
       await signup(email, password);
       
-      // Show notification with resend button
-      toast.success('Verification email sent! Please check your email to create your account.', {
-        duration: 30000, // 30 seconds
-        action: {
-          label: 'Resend Email',
-          onClick: () => handleResendEmail(),
-        },
-        style: {
-          background: '#10b981',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          fontSize: '16px',
-          fontWeight: '500',
-        }
-      });
+      // Redirect to verification page with email parameter
+      navigate(`/verify-email?email=${encodeURIComponent(email)}`);
       
-      // Stay on signup page as requested
     } catch (error: any) {
       toast.error(error.message || 'Signup failed', {
-        duration: 5000,
-        style: {
-          background: '#ef4444',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          fontSize: '16px',
-          fontWeight: '500',
-        }
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleVerifyEmail = async () => {
-    if (!email || !password) {
-      toast.error('Please enter email and password first', {
-        duration: 5000,
-        style: {
-          background: '#ef4444',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          fontSize: '16px',
-          fontWeight: '500',
-        }
-      });
-      return;
-    }
-    
-    setIsLoading(true);
-    try {
-      const fullName = `${firstName} ${lastName}`.trim() || undefined;
-      await verifyEmail(email, password, fullName);
-      toast.success('Account created and verified! You can now login.', {
-        duration: 8000, // 8 seconds
-        style: {
-          background: '#10b981',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          fontSize: '16px',
-          fontWeight: '500',
-        }
-      });
-    } catch (error: any) {
-      toast.error(error.message || 'Verification failed', {
-        duration: 5000,
-        style: {
-          background: '#ef4444',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          fontSize: '16px',
-          fontWeight: '500',
-        }
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleResendEmail = async () => {
-    if (!email) {
-      toast.error('Please enter your email address', {
-        duration: 5000,
-        style: {
-          background: '#ef4444',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          fontSize: '16px',
-          fontWeight: '500',
-        }
-      });
-      return;
-    }
-    
-    setIsLoading(true);
-    try {
-      await resendVerificationEmail(email);
-      toast.success('Verification email resent! Please check your email again.', {
-        duration: 30000, // 30 seconds
-        action: {
-          label: 'Resend Email',
-          onClick: () => handleResendEmail(),
-        },
-        style: {
-          background: '#10b981',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          fontSize: '16px',
-          fontWeight: '500',
-        }
-      });
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to resend email', {
         duration: 5000,
         style: {
           background: '#ef4444',
@@ -295,16 +196,13 @@ export default function Signup() {
               {isLoading ? 'Creating account...' : 'Continue'}
             </Button>
 
-            {/* Verify Email Button */}
-            <Button
-              type="button"
-              onClick={handleVerifyEmail}
-              disabled={isLoading}
-              variant="outline"
-              className="w-full h-12 bg-green-50 border-green-200 text-green-700 hover:bg-green-100 font-medium text-sm rounded-xl mt-3"
-            >
-              {isLoading ? 'Verifying...' : 'Verify Email (for testing)'}
-            </Button>
+            <p className="text-xs text-gray-500 mt-3 text-center">
+              You can re-send verification email after 1 minute if needed
+            </p>
+            
+            <p className="text-xs text-orange-600 mt-2 text-center">
+              ⚠️ Check your spam folder if you don't see the email
+            </p>
 
             <div className="relative my-8">
               <div className="absolute inset-0 flex items-center">

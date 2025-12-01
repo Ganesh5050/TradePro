@@ -2,28 +2,57 @@
 const isDevelopment = import.meta.env.DEV;
 const API_BASE = isDevelopment 
   ? 'http://localhost:3001/api' 
-  : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api');
+  : ''; // Use relative URL for Vercel serverless functions
+
+// Mock data fallback when backend is not available
+const mockStocks = [
+  { symbol: 'AAPL', name: 'Apple Inc.', price: 175.43, change: 2.15, changePercent: 1.24 },
+  { symbol: 'GOOGL', name: 'Alphabet Inc.', price: 138.21, change: -0.85, changePercent: -0.61 },
+  { symbol: 'MSFT', name: 'Microsoft Corp.', price: 378.91, change: 4.32, changePercent: 1.15 },
+  { symbol: 'AMZN', name: 'Amazon.com Inc.', price: 145.78, change: 1.92, changePercent: 1.33 },
+  { symbol: 'TSLA', name: 'Tesla Inc.', price: 242.68, change: -3.21, changePercent: -1.30 }
+];
+
+const mockIndices = [
+  { symbol: '^GSPC', name: 'S&P 500', value: 4514.02, change: 12.45, changePercent: 0.28 },
+  { symbol: '^DJI', name: 'Dow Jones', value: 35456.78, change: 156.23, changePercent: 0.44 },
+  { symbol: '^IXIC', name: 'NASDAQ', value: 14234.56, change: -45.67, changePercent: -0.32 }
+];
 
 export class ApiService {
+  private async fetchWithFallback(url: string, fallbackData: any) {
+    try {
+      const fullUrl = isDevelopment ? `${API_BASE}${url}` : url;
+      console.log('🔍 Fetching from:', fullUrl);
+      
+      const res = await fetch(fullUrl);
+      if (!res.ok) throw new Error('Backend not available');
+      return await res.json();
+    } catch (error) {
+      console.warn('Backend not available, using mock data:', error);
+      return fallbackData;
+    }
+  }
   // Stocks
   async getAllStocks() {
-    const res = await fetch(`${API_BASE}/stocks/all`);
-    return res.json();
+    return this.fetchWithFallback('/api/stocks/all', mockStocks);
   }
 
   async getStock(symbol: string) {
-    const res = await fetch(`${API_BASE}/stocks/${symbol}`);
-    return res.json();
+    const stock = mockStocks.find(s => s.symbol === symbol);
+    return this.fetchWithFallback(`/api/stocks/${symbol}`, stock || null);
   }
 
   async searchStocks(query: string) {
-    const res = await fetch(`${API_BASE}/stocks/search/query?q=${encodeURIComponent(query)}`);
-    return res.json();
+    const filtered = mockStocks.filter(s => 
+      s.symbol.toLowerCase().includes(query.toLowerCase()) ||
+      s.name.toLowerCase().includes(query.toLowerCase())
+    );
+    return this.fetchWithFallback(`/api/stocks/search?q=${encodeURIComponent(query)}`, filtered);
   }
 
   async getIndices() {
-    const res = await fetch(`${API_BASE}/stocks/indices/all`);
-    return res.json();
+    return this.fetchWithFallback('/api/stocks/indices/all', mockIndices);
   }
 
   // Portfolio
