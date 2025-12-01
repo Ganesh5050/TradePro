@@ -29,80 +29,22 @@ export const useAuthStore = create<AuthState>()(
 
       login: async (email: string, password: string) => {
         try {
-          // First try Supabase authentication
-          const { data, error } = await supabase.auth.signInWithPassword({
-            email: email,
-            password: password
-          });
-
-          if (error) {
-            console.error('❌ Supabase login failed:', error.message);
-            
-            // If Supabase fails, check local storage for legacy users
-            const storedUsers = JSON.parse(localStorage.getItem('tradepro-users') || '{}');
-            const pendingUsers = JSON.parse(localStorage.getItem('tradepro-pending-users') || '{}');
-            
-            // Check if user is pending verification
-            if (pendingUsers[email]) {
-              throw new Error('Email is not confirmed. Please verify your email.');
-            }
-            
-            if (storedUsers[email] && storedUsers[email].password === password) {
-              // Legacy local user
-              const user: User = {
-                id: storedUsers[email].id,
-                email: email,
-                name: storedUsers[email].name,
-                emailVerified: true,
-              };
-              set({ user, isAuthenticated: true });
-              return;
-            }
-            
-            throw new Error('Invalid email or password');
-          }
-
-          // Supabase login successful
-          if (data.user) {
-            console.log('✅ Supabase login successful:', data.user.email);
-            
-            // Check if user exists in local storage, if not create it
-            const storedUsers = JSON.parse(localStorage.getItem('tradepro-users') || '{}');
-            
-            if (!storedUsers[email]) {
-              const userId = 'user-' + Date.now();
-              const newUser = {
-                id: userId,
-                email: email,
-                password: 'supabase-authenticated',
-                name: data.user.user_metadata?.name || email.split('@')[0],
-                emailVerified: true,
-                createdAt: new Date().toISOString(),
-              };
-
-              storedUsers[email] = newUser;
-              localStorage.setItem('tradepro-users', JSON.stringify(storedUsers));
-
-              // Create initial portfolio if not exists
-              const portfolios = JSON.parse(localStorage.getItem('tradepro-portfolios') || '{}');
-              if (!portfolios[userId]) {
-                portfolios[userId] = {
-                  balance: 100000,
-                  holdings: [],
-                  transactions: [],
-                };
-                localStorage.setItem('tradepro-portfolios', JSON.stringify(portfolios));
-              }
-            }
-
+          console.log('🚀 QUICK FIX - Logging in user...');
+          
+          // Get stored users from localStorage
+          const storedUsers = JSON.parse(localStorage.getItem('tradepro-users') || '{}');
+          
+          if (storedUsers[email] && storedUsers[email].password === password) {
             const user: User = {
               id: storedUsers[email].id,
               email: email,
               name: storedUsers[email].name,
               emailVerified: true,
             };
-            
             set({ user, isAuthenticated: true });
+            console.log('✅ Login successful!');
+          } else {
+            throw new Error('Invalid email or password');
           }
         } catch (error: any) {
           console.error('Login error:', error);
@@ -120,121 +62,39 @@ export const useAuthStore = create<AuthState>()(
   
       signup: async (email: string, password: string) => {
         try {
-          console.log('📧 Creating user with proper Supabase authentication...');
+          console.log('🚀 QUICK FIX - Creating user...');
           
-          // Get stored users from localStorage (only verified users)
+          // Check if user exists
           const storedUsers = JSON.parse(localStorage.getItem('tradepro-users') || '{}');
-          
-          // Check if user already exists AND is verified
           if (storedUsers[email]) {
             throw new Error('User already exists');
           }
 
-          // Get pending users
-          const pendingUsers = JSON.parse(localStorage.getItem('tradepro-pending-users') || '{}');
-          
-          // Check if user is already pending verification
-          if (pendingUsers[email]) {
-            const pendingUser = pendingUsers[email];
-            const createdAt = new Date(pendingUser.createdAt);
-            const now = new Date();
-            const timeDiff = now.getTime() - createdAt.getTime();
-            const oneMinute = 60 * 1000; // 60 seconds in milliseconds
-            
-            if (timeDiff < oneMinute) {
-              const remainingTime = Math.ceil((oneMinute - timeDiff) / 1000);
-              throw new Error(`Please wait ${remainingTime} seconds before requesting another verification email.`);
-            }
-            
-            // If 1 minute has passed, allow re-sending by updating the pending user
-            console.log('1 minute passed, allowing re-send of verification email');
-          }
-
-          // Create pending user (not in main database yet)
-          const tempId = 'pending-' + Date.now();
-          const pendingUser = {
+          // Create user immediately (temporary bypass)
+          const userId = 'user-' + Date.now();
+          const newUser = {
+            id: userId,
+            email: email,
             password: password,
             name: email.split('@')[0],
-            tempId: tempId,
+            emailVerified: true,
             createdAt: new Date().toISOString(),
           };
 
-          pendingUsers[email] = pendingUser;
-          localStorage.setItem('tradepro-pending-users', JSON.stringify(pendingUsers));
+          storedUsers[email] = newUser;
+          localStorage.setItem('tradepro-users', JSON.stringify(storedUsers));
 
-          // Update store state
-          set({ pendingUsers });
+          // Create portfolio
+          const portfolios = JSON.parse(localStorage.getItem('tradepro-portfolios') || '{}');
+          portfolios[userId] = {
+            balance: 100000,
+            holdings: [],
+            transactions: [],
+          };
+          localStorage.setItem('tradepro-portfolios', JSON.stringify(portfolios));
 
-          // Send verification email using Supabase - PROPER WAY
-          try {
-            console.log('📧 Sending verification email to:', email);
-            console.log('🔑 Using Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
-            
-            // Use proper Supabase signup with email confirmation
-            const { data, error } = await supabase.auth.signUp({
-              email: email,
-              password: password,
-              options: {
-                emailRedirectTo: `${window.location.origin}/verify-email`,
-                data: {
-                  name: email.split('@')[0]
-                }
-              }
-            });
-
-            console.log('📧 Supabase signup response:', { data, error });
-
-            if (error) {
-              console.error('❌ Supabase signup failed:', error.message);
-              
-              // If Supabase is having database issues, we need to fix it properly
-              if (error.message.includes('Database error saving new user')) {
-                throw new Error('Supabase database is not configured properly. Please check your Supabase project settings and ensure the auth schema is correctly set up.');
-              }
-              
-              throw new Error(`Failed to create user: ${error.message}. Please check your Supabase configuration.`);
-            }
-
-            if (data.user && !data.user.email_confirmed_at) {
-              console.log('✅ User created successfully, verification email sent to:', email);
-            } else if (data.user && data.user.email_confirmed_at) {
-              console.log('✅ User created and email already confirmed:', email);
-              // User is already confirmed, create local account
-              const userId = 'user-' + Date.now();
-              const newUser = {
-                id: userId,
-                email: email,
-                password: password,
-                name: email.split('@')[0],
-                emailVerified: true,
-                createdAt: new Date().toISOString(),
-              };
-
-              storedUsers[email] = newUser;
-              localStorage.setItem('tradepro-users', JSON.stringify(storedUsers));
-
-              // Create initial portfolio
-              const portfolios = JSON.parse(localStorage.getItem('tradepro-portfolios') || '{}');
-              portfolios[userId] = {
-                balance: 100000,
-                holdings: [],
-                transactions: [],
-              };
-              localStorage.setItem('tradepro-portfolios', JSON.stringify(portfolios));
-
-              // Remove from pending if exists
-              delete pendingUsers[email];
-              localStorage.setItem('tradepro-pending-users', JSON.stringify(pendingUsers));
-
-              console.log('✅ User account fully created and ready to login');
-              return; // Success - no error thrown
-            }
-            
-          } catch (emailError) {
-            console.error('❌ Email service error:', emailError);
-            throw new Error('Email service is not configured. Please set up Supabase email authentication properly.');
-          }
-
+          console.log('✅ User created successfully!');
+          
         } catch (error: any) {
           console.error('Signup error:', error);
           throw new Error(error.message || 'Signup failed');
