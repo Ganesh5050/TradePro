@@ -58,10 +58,10 @@ export const useStockStore = create<StockState>((set, get) => ({
       const isDevelopment = import.meta.env.DEV;
       const API_BASE = isDevelopment 
         ? 'http://localhost:3001/api' 
-        : 'https://trade-pro-backend.onrender.com';
+        : ''; // Use relative URL for Vercel serverless functions
       
       console.log('🔍 Stock Store API_BASE:', API_BASE);
-      const response = await fetch(`${API_BASE}/stocks/all`);
+      const response = await fetch(`${API_BASE}/api/stocks/all`);
       const result = await response.json();
       
       if (result.success && result.data && result.data.length > 0) {
@@ -84,10 +84,10 @@ export const useStockStore = create<StockState>((set, get) => ({
       const isDevelopment = import.meta.env.DEV;
       const API_BASE = isDevelopment 
         ? 'http://localhost:3001/api' 
-        : 'https://trade-pro-backend.onrender.com';
+        : ''; // Use relative URL for Vercel serverless functions
       
       console.log('🔍 Indices Store API_BASE:', API_BASE);
-      const response = await fetch(`${API_BASE}/stocks/indices/all`);
+      const response = await fetch(`${API_BASE}/api/stocks/indices/all`);
       const result = await response.json();
       
       if (result.success && result.data && result.data.length > 0) {
