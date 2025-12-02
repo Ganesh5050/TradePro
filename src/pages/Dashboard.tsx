@@ -32,7 +32,7 @@ export default function Dashboard() {
     if (user && isAuthenticated) {
       fetchPortfolio(user.id);
     }
-  }, [user, isAuthenticated]);
+  }, [user, isAuthenticated, fetchPortfolio]);
 
   // Auto-refresh portfolio every 2 seconds
   useEffect(() => {
@@ -43,7 +43,7 @@ export default function Dashboard() {
     }, 2000);
 
     return () => clearInterval(interval);
-  }, [user, isAuthenticated]);
+  }, [user, isAuthenticated, fetchPortfolio]);
 
   // Filter and sort stocks
   const filtered = (stocks || [])
