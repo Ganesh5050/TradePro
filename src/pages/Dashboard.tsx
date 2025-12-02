@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useStockStore } from '@/stores/useStockStore';
-import { useAuthStore } from '@/stores/useAuthStore';
+// import { useAuthStore } from '@/stores/useAuthStore'; // Temporarily disabled
 import { usePortfolioStore } from '@/stores/usePortfolioStore';
 import { Input } from '@/components/ui/input';
 import StockCard from '@/components/trading/StockCard';
@@ -17,7 +17,10 @@ import { Button } from '@/components/ui/button';
 
 export default function Dashboard() {
   const { stocks, indices, fetchStocks, fetchIndices, isLoading } = useStockStore();
-  const { user, isAuthenticated } = useAuthStore();
+  // Mock values to replace useAuthStore while it's broken
+  const user = { id: 'demo-user', email: 'demo@example.com', name: 'Demo User' };
+  const isAuthenticated = true;
+  // const { user, isAuthenticated } = useAuthStore(); // Temporarily disabled
   const { balance, holdings, fetchPortfolio } = usePortfolioStore();
   const [search, setSearch] = useState('');
   const [selectedStock, setSelectedStock] = useState<any>(null);

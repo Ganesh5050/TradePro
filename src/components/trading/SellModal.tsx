@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { X } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePortfolioStore } from '@/stores/usePortfolioStore';
-import { useAuthStore } from '@/stores/useAuthStore';
+// import { useAuthStore } from '@/stores/useAuthStore'; // Temporarily disabled
 
 interface SellModalProps {
   symbol: string;
@@ -22,7 +22,9 @@ export default function SellModal({
   const [quantity, setQuantity] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
   const { sellStock } = usePortfolioStore();
-  const { user } = useAuthStore();
+  // Mock user to replace useAuthStore while it's broken
+  const user = { id: 'demo-user', email: 'demo@example.com', name: 'Demo User' };
+  // const { user } = useAuthStore(); // Temporarily disabled
 
   const totalAmount = quantity * currentPrice;
 

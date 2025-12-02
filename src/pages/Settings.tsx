@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useAuthStore } from '@/stores/useAuthStore';
+// import { useAuthStore } from '@/stores/useAuthStore'; // Temporarily disabled
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,7 +11,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { User, Bell, Shield, Palette } from 'lucide-react';
 
 const Settings = () => {
-  const { user } = useAuthStore();
+  // Mock user to replace useAuthStore while it's broken
+  const user = { id: 'demo-user', email: 'demo@example.com', name: 'Demo User' };
+  // const { user } = useAuthStore(); // Temporarily disabled
   const { toast } = useToast();
   
   const [profile, setProfile] = useState({

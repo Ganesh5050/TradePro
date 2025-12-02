@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { useAuthStore } from '@/stores/useAuthStore';
+// import { useAuthStore } from '@/stores/useAuthStore'; // Temporarily disabled due to file corruption
 import { 
   TrendingUp, 
   Menu, 
@@ -30,7 +30,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { user, isAuthenticated, logout } = useAuthStore();
+  // Mock values to replace useAuthStore while it's broken
+  const user = null;
+  const isAuthenticated = false;
+  const logout = async () => console.log('Mock logout');
+  // const { user, isAuthenticated, logout } = useAuthStore(); // Temporarily disabled
   const location = useLocation();
   const navigate = useNavigate();
 

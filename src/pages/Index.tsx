@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from '@/stores/useAuthStore';
+// import { useAuthStore } from '@/stores/useAuthStore'; // Temporarily disabled
 import HeroSection from '@/components/ui/hero-section';
 import SmoothScrollStack from '@/components/ui/SmoothScrollStack';
 import { Button } from '@/components/ui/button';
 import { TrendingUp, Shield, Users, BookOpen, Trophy, BarChart3, Zap, Target, Award, CheckCircle, ArrowRight, LineChart, Wallet, Brain, X } from 'lucide-react';
 
 const Index = () => {
-  const { isAuthenticated } = useAuthStore();
+  // Mock value to replace useAuthStore while it's broken
+  const isAuthenticated = false;
+  // const { isAuthenticated } = useAuthStore(); // Temporarily disabled
   const navigate = useNavigate();
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
 
