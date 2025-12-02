@@ -1,7 +1,7 @@
 // For localhost development, use the correct backend URL
 const isDevelopment = import.meta.env.DEV;
 const API_BASE = isDevelopment 
-  ? 'http://localhost:3001/api' 
+  ? 'http://localhost:3001' 
   : ''; // Use relative URL for Vercel serverless functions
 
 // Mock data fallback when backend is not available

@@ -57,7 +57,7 @@ export const useStockStore = create<StockState>((set, get) => ({
       // For localhost development, use the correct backend URL
       const isDevelopment = import.meta.env.DEV;
       const API_BASE = isDevelopment 
-        ? 'http://localhost:3001/api' 
+        ? 'http://localhost:3001' 
         : ''; // Use relative URL for Vercel serverless functions
       
       console.log('🔍 Stock Store API_BASE:', API_BASE);
@@ -83,7 +83,7 @@ export const useStockStore = create<StockState>((set, get) => ({
       // For localhost development, use the correct backend URL
       const isDevelopment = import.meta.env.DEV;
       const API_BASE = isDevelopment 
-        ? 'http://localhost:3001/api' 
+        ? 'http://localhost:3001' 
         : ''; // Use relative URL for Vercel serverless functions
       
       console.log('🔍 Indices Store API_BASE:', API_BASE);
