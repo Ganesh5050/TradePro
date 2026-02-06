@@ -1,20 +1,23 @@
 import { useEffect, useState } from 'react';
 import { useStockStore } from '@/stores/useStockStore';
-// import { useAuthStore } from '@/stores/useAuthStore'; // Temporarily disabled
+import { useAuthStore } from '@/stores/useAuthStore';
 import { usePortfolioStore } from '@/stores/usePortfolioStore';
 import { Input } from '@/components/ui/input';
 import StockCard from '@/components/trading/StockCard';
 import PortfolioSummary from '@/components/trading/PortfolioSummary';
-import { Search } from 'lucide-react';
+import { Search, Filter, ChevronDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 
 export default function Dashboard() {
   const { stocks, indices, fetchStocks, fetchIndices, isLoading } = useStockStore();
-  // Mock values to replace useAuthStore while it's broken
-  const user = { id: 'demo-user', email: 'demo@example.com', name: 'Demo User' };
-  const isAuthenticated = true;
-  // const { user, isAuthenticated } = useAuthStore(); // Temporarily disabled
+  const { user, isAuthenticated } = useAuthStore();
   const { balance, holdings, fetchPortfolio } = usePortfolioStore();
   const [search, setSearch] = useState('');
   const [selectedStock, setSelectedStock] = useState<any>(null);
@@ -26,7 +29,7 @@ export default function Dashboard() {
     if (user && isAuthenticated) {
       fetchPortfolio(user.id);
     }
-  }, [user, isAuthenticated, fetchPortfolio]);
+  }, [user, isAuthenticated]);
 
   // Auto-refresh portfolio every 2 seconds
   useEffect(() => {
@@ -37,7 +40,7 @@ export default function Dashboard() {
     }, 2000);
 
     return () => clearInterval(interval);
-  }, [user, isAuthenticated, fetchPortfolio]);
+  }, [user, isAuthenticated]);
 
   // Filter and sort stocks
   const filtered = (stocks || [])
@@ -155,15 +158,53 @@ export default function Dashboard() {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold text-gray-900">Market Indices ({indices.length})</h2>
-              <select 
-                value={indicesFilter}
-                onChange={(e) => setIndicesFilter(e.target.value as 'neutral' | 'desc' | 'asc')}
-                className="px-4 py-2 h-10 font-medium text-sm rounded-full bg-white border border-gray-200 shadow-sm cursor-pointer"
-              >
-                <option value="neutral">Neutral</option>
-                <option value="desc">High to Low %</option>
-                <option value="asc">Low to High %</option>
-              </select>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button 
+                    className="flex items-center gap-1.5 px-4 py-2 h-10 font-medium text-sm whitespace-nowrap transition-all"
+                    style={{
+                      backgroundColor: 'white',
+                      borderRadius: '100px',
+                      boxShadow: '-3px -3px 6px 0px rgb(250, 251, 255), 3px 3px 6px 0px rgba(0, 125, 252, 0.15)',
+                      border: 'none',
+                      color: 'black'
+                    }}
+                  >
+                    <Filter className="h-4 w-4" />
+                    Filter
+                    <ChevronDown className="h-3.5 w-3.5" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-52 bg-white border border-gray-200 shadow-lg">
+                  <DropdownMenuItem 
+                    onClick={() => setIndicesFilter('neutral')}
+                    className={`cursor-pointer ${indicesFilter === 'neutral' ? 'bg-blue-50 text-blue-600 font-medium' : 'hover:bg-gray-50'}`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-gray-400"></span>
+                      Neutral
+                    </span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => setIndicesFilter('desc')}
+                    className={`cursor-pointer ${indicesFilter === 'desc' ? 'bg-green-50 text-green-700 font-medium' : 'hover:bg-gray-50'}`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                      High to Low %
+                    </span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => setIndicesFilter('asc')}
+                    className={`cursor-pointer ${indicesFilter === 'asc' ? 'bg-red-50 text-red-700 font-medium' : 'hover:bg-gray-50'}`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                      Low to High %
+                    </span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
             <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-5">
               {sortedIndices.map((index: any, idx: number) => {
@@ -216,16 +257,64 @@ export default function Dashboard() {
             />
           </div>
           
-          <select 
-            value={stocksFilter}
-            onChange={(e) => setStocksFilter(e.target.value as 'alpha-asc' | 'alpha-desc' | 'high' | 'low')}
-            className="px-4 py-2 h-10 font-medium text-sm rounded-full bg-white border border-gray-200 shadow-sm cursor-pointer"
-          >
-            <option value="alpha-asc">A-Z</option>
-            <option value="alpha-desc">Z-A</option>
-            <option value="high">Highest Change</option>
-            <option value="low">Lowest Change</option>
-          </select>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button 
+                className="flex items-center gap-1.5 px-4 py-2 h-10 font-medium text-sm whitespace-nowrap transition-all"
+                style={{
+                  backgroundColor: 'white',
+                  borderRadius: '100px',
+                  boxShadow: '-3px -3px 6px 0px rgb(250, 251, 255), 3px 3px 6px 0px rgba(0, 125, 252, 0.15)',
+                  border: 'none',
+                  color: 'black'
+                }}
+              >
+                <Filter className="h-4 w-4" />
+                Filter
+                <ChevronDown className="h-3.5 w-3.5" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-64 bg-white border border-gray-200 shadow-lg">
+              <DropdownMenuItem 
+                onClick={() => setStocksFilter('alpha-asc')}
+                className={`cursor-pointer flex items-center justify-between ${stocksFilter === 'alpha-asc' ? 'bg-blue-50 text-blue-600 font-medium' : 'hover:bg-gray-50'}`}
+              >
+                <span className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-gray-400"></span>
+                  Alphabetical
+                </span>
+                <ArrowUp className="h-4 w-4" />
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => setStocksFilter('alpha-desc')}
+                className={`cursor-pointer flex items-center justify-between ${stocksFilter === 'alpha-desc' ? 'bg-blue-50 text-blue-600 font-medium' : 'hover:bg-gray-50'}`}
+              >
+                <span className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-gray-400"></span>
+                  Alphabetical
+                </span>
+                <ArrowDown className="h-4 w-4" />
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => setStocksFilter('high')}
+                className={`cursor-pointer ${stocksFilter === 'high' ? 'bg-green-50 text-green-700 font-medium' : 'hover:bg-gray-50'}`}
+              >
+                <span className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                  High
+                </span>
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => setStocksFilter('low')}
+                className={`cursor-pointer ${stocksFilter === 'low' ? 'bg-red-50 text-red-700 font-medium' : 'hover:bg-gray-50'}`}
+              >
+                <span className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                  Low
+                </span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {/* All Stocks Grid */}

@@ -1,21 +1,19 @@
 import { useEffect, useState } from 'react';
 import { usePortfolioStore } from '@/stores/usePortfolioStore';
 import { useStockStore } from '@/stores/useStockStore';
-// import { useAuthStore } from '@/stores/useAuthStore'; // Temporarily disabled
+import { useAuthStore } from '@/stores/useAuthStore';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import PortfolioPerformanceChart from '@/components/trading/PortfolioPerformanceChart';
+import SectorAllocationChart from '@/components/trading/SectorAllocationChart';
 import SellModal from '@/components/trading/SellModal';
 
 export default function Portfolio() {
   const { holdings, balance, fetchPortfolio } = usePortfolioStore();
   const { stocks, fetchStocks } = useStockStore();
-  // Mock values to replace useAuthStore while it's broken
-  const user = { id: 'demo-user', email: 'demo@example.com', name: 'Demo User' };
-  const isAuthenticated = true;
-  // const { user, isAuthenticated } = useAuthStore(); // Temporarily disabled
+  const { user, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
   const [selectedStock, setSelectedStock] = useState<{
     symbol: string;
@@ -38,7 +36,7 @@ export default function Portfolio() {
   // Auto-refresh portfolio every 2 seconds to show latest holdings
   useEffect(() => {
     if (!user || !isAuthenticated) return;
-    
+
     const interval = setInterval(() => {
       fetchPortfolio(user.id);
     }, 2000);
@@ -55,7 +53,7 @@ export default function Portfolio() {
     const pl = currentValue - invested;
     const plPercent = invested > 0 ? (pl / invested) * 100 : 0;
     const dayChange = liveStock?.changePercent || 0;
-    
+
     return {
       ...holding,
       ltp,
@@ -156,7 +154,7 @@ export default function Portfolio() {
           <CardContent>
             <div className="h-80">
               {enrichedHoldings.length > 0 ? (
-                <PortfolioPerformanceChart 
+                <PortfolioPerformanceChart
                   totalInvested={totalInvested}
                   currentValue={totalCurrentValue}
                 />
@@ -203,10 +201,10 @@ export default function Portfolio() {
                       {enrichedHoldings.map((holding, idx) => {
                         const liveStock = stocks.find(s => s.symbol === holding.symbol);
                         const stockName = liveStock?.name || holding.symbol;
-                        
+
                         return (
-                          <TableRow 
-                            key={holding.symbol} 
+                          <TableRow
+                            key={holding.symbol}
                             className="border-gray-200 hover:bg-gray-50 cursor-pointer"
                             onClick={() => setSelectedStock({
                               symbol: holding.symbol,
@@ -270,7 +268,7 @@ export default function Portfolio() {
                     <span>● Current value</span>
                   </div>
                 </div>
-                
+
                 {/* Colorful Bar Chart */}
                 <div className="h-12 flex rounded-lg overflow-hidden">
                   {enrichedHoldings.map((holding, idx) => {
@@ -300,6 +298,27 @@ export default function Portfolio() {
                   ₹{totalCurrentValue.toFixed(2)}
                 </div>
               </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Sector Allocation Doughnut Chart */}
+        {enrichedHoldings.length > 0 && (
+          <Card className="bg-white border border-gray-200">
+            <CardHeader>
+              <CardTitle className="text-gray-900">Sector-wise Allocation</CardTitle>
+              <p className="text-sm text-gray-600 mt-1">
+                Distribution of your portfolio across different sectors
+              </p>
+            </CardHeader>
+            <CardContent>
+              <SectorAllocationChart
+                holdings={enrichedHoldings.map(h => ({
+                  symbol: h.symbol,
+                  currentValue: h.currentValue,
+                }))}
+                stocks={stocks}
+              />
             </CardContent>
           </Card>
         )}

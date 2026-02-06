@@ -1,14 +1,11 @@
 import { useEffect } from 'react';
-// import { useAuthStore } from '@/stores/useAuthStore'; // Temporarily disabled
+import { useAuthStore } from '@/stores/useAuthStore';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Clock } from 'lucide-react';
 
 export default function Orders() {
-  // Mock values to replace useAuthStore while it's broken
-  const user = { id: 'demo-user', email: 'demo@example.com', name: 'Demo User' };
-  const isAuthenticated = true;
-  // const { user, isAuthenticated } = useAuthStore(); // Temporarily disabled
+  const { user, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
 
   useEffect(() => {

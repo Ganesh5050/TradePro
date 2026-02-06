@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useStockStore } from '@/stores/useStockStore';
 import { useWatchlistStore } from '@/stores/useWatchlistStore';
-// import { useAuthStore } from '@/stores/useAuthStore'; // Temporarily disabled
+import { useAuthStore } from '@/stores/useAuthStore';
 import { usePortfolioStore } from '@/stores/usePortfolioStore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import BuySellModal from '@/components/trading/BuySellModal';
+import StockChart from '@/components/trading/StockChart';
 import { Star, TrendingUp, TrendingDown } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -14,12 +14,9 @@ export default function StockDetail() {
   const { symbol } = useParams<{ symbol: string }>();
   const { selectedStock, getStock, isLoading, stocks, fetchStocks } = useStockStore();
   const { isInWatchlist, addToWatchlist, removeFromWatchlist } = useWatchlistStore();
-  // Mock values to replace useAuthStore while it's broken
-  const user = { id: 'demo-user', email: 'demo@example.com', name: 'Demo User' };
-  const isAuthenticated = true;
-  // const { user, isAuthenticated } = useAuthStore(); // Temporarily disabled
+  const { user, isAuthenticated } = useAuthStore();
   const { buyStock, sellStock, holdings, fetchPortfolio } = usePortfolioStore();
-  
+
   // ALL HOOKS MUST BE AT THE TOP - BEFORE ANY EARLY RETURNS
   const [showBuySell, setShowBuySell] = useState(false);
   const [quantity, setQuantity] = useState(1);
@@ -172,19 +169,7 @@ export default function StockDetail() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         {/* Left: Chart Preview */}
         <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Price Chart</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-center h-96 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                <div className="text-center">
-                  <p className="text-xl font-semibold text-gray-600 mb-2">Chart Not Implemented Yet</p>
-                  <p className="text-sm text-gray-500">We will be implementing proper live chart with historical data and technical patterns later</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <StockChart symbol={selectedStock.symbol} />
         </div>
 
         {/* Right: Trading Panel */}
@@ -207,21 +192,19 @@ export default function StockDetail() {
               <div className="flex gap-2">
                 <button
                   onClick={() => setTradeType('buy')}
-                  className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
-                    tradeType === 'buy'
-                      ? 'bg-green-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+                  className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${tradeType === 'buy'
+                    ? 'bg-green-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
                 >
                   Buy
                 </button>
                 <button
                   onClick={() => setTradeType('sell')}
-                  className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
-                    tradeType === 'sell'
-                      ? 'bg-red-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+                  className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${tradeType === 'sell'
+                    ? 'bg-red-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
                 >
                   Sell
                 </button>

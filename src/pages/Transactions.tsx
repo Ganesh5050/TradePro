@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-// import { useAuthStore } from '@/stores/useAuthStore'; // Temporarily disabled
+import { useAuthStore } from '@/stores/useAuthStore';
 import { usePortfolioStore } from '@/stores/usePortfolioStore';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,10 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { TrendingUp, TrendingDown, Receipt, Clock } from 'lucide-react';
 
 export default function Transactions() {
-  // Mock values to replace useAuthStore while it's broken
-  const user = { id: 'demo-user', email: 'demo@example.com', name: 'Demo User' };
-  const isAuthenticated = true;
-  // const { user, isAuthenticated } = useAuthStore(); // Temporarily disabled
+  const { user, isAuthenticated } = useAuthStore();
   const { transactions, fetchTransactions } = usePortfolioStore();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'orders' | 'transactions'>('transactions');

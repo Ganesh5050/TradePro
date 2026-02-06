@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-// import { useAuthStore } from '@/stores/useAuthStore'; // Temporarily disabled
+import { useAuthStore } from '@/stores/useAuthStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,12 +10,7 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  // Mock login function to replace useAuthStore while it's broken
-  const login = async (email: string, password: string) => {
-    console.log('Mock login for:', email);
-    toast.success('Mock login successful!');
-  };
-  // const { login } = useAuthStore(); // Temporarily disabled
+  const { login } = useAuthStore();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -23,10 +18,18 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      // Demo login - works with demo@gmail.com / demo123
-      if (email === 'demo@gmail.com' && password === 'demo123') {
-        console.log('✅ Demo user login successful!');
-        toast.success('Welcome to TradePro Elite! (Demo Mode)', {
+      // Demo bypass login - set demo user in store
+      if (email === 'demo@gmail.com' && password === '123') {
+        // Manually set demo user in auth store
+        useAuthStore.setState({
+          user: {
+            id: 'demo-user-123',
+            email: 'demo@gmail.com',
+            name: 'Demo User'
+          },
+          isAuthenticated: true
+        });
+        toast.success('Welcome back! (Demo Mode)', {
           duration: 5000,
           style: {
             background: '#10b981',
@@ -94,15 +97,6 @@ export default function Login() {
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-2 text-gray-900">Welcome back</h1>
           <p className="text-gray-600">Sign in to continue building</p>
-        </div>
-
-        {/* Demo Credentials Banner */}
-        <div className="mb-6 bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl p-4 shadow-lg">
-          <div className="text-white text-center">
-            <p className="font-bold text-lg mb-1">🎯 Demo Login</p>
-            <p className="text-sm opacity-90">Email: <span className="font-mono font-bold">demo@gmail.com</span></p>
-            <p className="text-sm opacity-90">Password: <span className="font-mono font-bold">demo123</span></p>
-          </div>
         </div>
 
         {/* Form Card */}

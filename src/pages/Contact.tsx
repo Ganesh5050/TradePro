@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { Star } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -8,11 +9,46 @@ export default function Contact() {
     email: '',
     message: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    // Handle form submission
+    
+    if (!formData.name || !formData.email || !formData.message) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      const response = await fetch('http://localhost:3001/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        toast.success(result.message);
+        // Reset form
+        setFormData({
+          name: '',
+          email: '',
+          message: ''
+        });
+      } else {
+        toast.error(result.error || 'Failed to send message');
+      }
+    } catch (error) {
+      console.error('Contact form error:', error);
+      toast.error('Failed to send message. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -181,13 +217,14 @@ export default function Contact() {
               {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full text-white font-semibold py-4 px-8 rounded-full hover:opacity-90 transition-all"
+                disabled={isSubmitting}
+                className="w-full text-white font-semibold py-4 px-8 rounded-full hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{
                   backgroundColor: 'black',
                   boxShadow: 'rgba(61, 61, 61, 0.72) 0px 0.602187px 1.08394px -1.25px, rgba(61, 61, 61, 0.64) 0px 2.28853px 4.11936px -2.5px, rgba(61, 61, 61, 0.25) 0px 10px 18px -3.75px, rgba(0, 0, 0, 0.35) 0px 0.706592px 0.706592px -0.583333px, rgba(0, 0, 0, 0.34) 0px 1.80656px 1.80656px -1.16667px, rgba(0, 0, 0, 0.33) 0px 3.62176px 3.62176px -1.75px, rgba(0, 0, 0, 0.3) 0px 6.8656px 6.8656px -2.33333px, rgba(0, 0, 0, 0.26) 0px 13.6468px 13.6468px -2.91667px, rgba(0, 0, 0, 0.15) 0px 30px 30px -3.5px'
                 }}
               >
-                Send Message
+                {isSubmitting ? 'Sending...' : 'Send Message'}
               </button>
 
               <p className="text-center text-sm text-gray-600">

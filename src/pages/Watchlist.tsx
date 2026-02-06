@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useWatchlistStore } from '@/stores/useWatchlistStore';
 import { useStockStore } from '@/stores/useStockStore';
-// import { useAuthStore } from '@/stores/useAuthStore'; // Temporarily disabled
+import { useAuthStore } from '@/stores/useAuthStore';
 import { useNavigate } from 'react-router-dom';
 import StockCard from '@/components/trading/StockCard';
 import { Button } from '@/components/ui/button';
@@ -9,10 +9,7 @@ import { Button } from '@/components/ui/button';
 export default function Watchlist() {
   const { watchlist, fetchWatchlist } = useWatchlistStore();
   const { stocks, fetchStocks } = useStockStore();
-  // Mock values to replace useAuthStore while it's broken
-  const user = { id: 'demo-user', email: 'demo@example.com', name: 'Demo User' };
-  const isAuthenticated = true;
-  // const { user, isAuthenticated } = useAuthStore(); // Temporarily disabled
+  const { user, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
 
   useEffect(() => {

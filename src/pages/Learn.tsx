@@ -1,14 +1,12 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-// import { useAuthStore } from '@/stores/useAuthStore'; // Temporarily disabled
+import { useAuthStore } from '@/stores/useAuthStore';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { BookOpen, Play, Clock, CheckCircle, Star } from 'lucide-react';
 
 const Learn = () => {
-  // Mock value to replace useAuthStore while it's broken
-  const isAuthenticated = true;
-  // const { isAuthenticated } = useAuthStore(); // Temporarily disabled
+  const { isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
 
   const courses = [

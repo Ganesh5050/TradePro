@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-// import { useAuthStore } from '@/stores/useAuthStore'; // Temporarily disabled
+import { useAuthStore } from '@/stores/useAuthStore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,14 +14,7 @@ export default function Signup() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  // Mock functions to replace useAuthStore while it's broken
-  const signup = async (email: string, password: string) => {
-    console.log('Mock signup for:', email);
-  };
-  const verifyEmail = async (email: string, code: string) => {
-    console.log('Mock email verification');
-  };
-  // const { signup, verifyEmail } = useAuthStore(); // Temporarily disabled
+  const { signup, verifyEmail } = useAuthStore();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -81,10 +74,28 @@ export default function Signup() {
     setIsLoading(true);
 
     try {
-      await signup(email, password);
+      const result = await signup(email, password);
       
-      // Redirect to verification page with email parameter
-      navigate(`/verify-email?email=${encodeURIComponent(email)}`);
+      if (result.success) {
+        toast.success(result.message, {
+          duration: 5000,
+        });
+        
+        // Always redirect to verify email page since we require confirmation
+        navigate('/verify-email');
+      } else {
+        toast.error(result.message, {
+          duration: 5000,
+          style: {
+            background: '#ef4444',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            fontSize: '16px',
+            fontWeight: '500',
+          }
+        });
+      }
       
     } catch (error: any) {
       toast.error(error.message || 'Signup failed', {

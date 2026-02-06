@@ -42,7 +42,7 @@
     --success: 142 76% 36%;
     --success-foreground: 0 0% 98%;
     --success-glow: 142 76% 46%;
-    
+
     --danger: 0 84% 60%;
     --danger-foreground: 0 0% 98%;
     --danger-glow: 0 84% 70%;
@@ -56,7 +56,7 @@
     --bullish: 142 85% 45%;
     --bearish: 0 85% 60%;
     --neutral: 220 10% 65%;
-    
+
     /* Glass & Blur Effects */
     --glass-primary: 240 85% 60% / 0.1;
     --glass-secondary: 220 25% 12% / 0.4;
@@ -74,9 +74,9 @@
     --shadow-success: 0 10px 30px -10px hsl(142 85% 45% / 0.3);
     --shadow-danger: 0 10px 30px -10px hsl(0 85% 60% / 0.3);
     --shadow-glass: 0 8px 32px hsl(220 25% 5% / 0.4);
-    
+
     /* Premium Button Shadow */
-    --shadow-button-primary: 
+    --shadow-button-primary:
       rgba(61, 61, 61, 0.72) 0px 0.602187px 1.08394px -1.25px,
       rgba(61, 61, 61, 0.64) 0px 2.28853px 4.11936px -2.5px,
       rgba(61, 61, 61, 0.25) 0px 10px 18px -3.75px,
@@ -86,7 +86,7 @@
       rgba(0, 0, 0, 0.3) 0px 6.8656px 6.8656px -2.33333px,
       rgba(0, 0, 0, 0.26) 0px 13.6468px 13.6468px -2.91667px,
       rgba(0, 0, 0, 0.15) 0px 30px 30px -3.5px;
-    
+
     /* Secondary Button Shadow with Inset */
     --shadow-button-secondary:
       rgba(158, 158, 158, 0.69) 0px 0.706592px 0.706592px -0.583333px,
@@ -96,7 +96,7 @@
       rgba(158, 158, 158, 0.52) 0px 13.6468px 13.6468px -2.91667px,
       rgba(158, 158, 158, 0.3) 0px 30px 30px -3.5px,
       rgb(255, 255, 255) 0px 3px 1px 0px inset;
-    
+
     /* Premium Card Shadow */
     --shadow-card-premium:
       rgba(0, 0, 0, 0.08) 0px 0.706592px 0.706592px -0.666667px,
@@ -127,9 +127,20 @@
   html {
     scroll-behavior: smooth;
   }
+
+  /* 
+   * Hide Navbar logic when ScrollRevealFooter triggers the class
+   * Targeting the fixed nav element
+   * Using !important to override Framer Motion's inline style
+   */
+  body.hide-navbar nav.fixed {
+    transform: translateY(-120%) !important;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
 }
 
 @layer components {
+
   /* Glass Card Effects */
   .glass-card {
     @apply bg-card border border-border;
@@ -230,10 +241,13 @@
 
 /* Trading Animations */
 @keyframes trading-pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
+
   50% {
     opacity: 0.8;
     transform: scale(1.05);
@@ -241,18 +255,24 @@
 }
 
 @keyframes float {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0px);
   }
+
   50% {
     transform: translateY(-10px);
   }
 }
 
 @keyframes glow {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 0 20px hsl(240 85% 60% / 0.3);
   }
+
   50% {
     box-shadow: 0 0 30px hsl(240 85% 60% / 0.5);
   }

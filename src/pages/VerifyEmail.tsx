@@ -1,17 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
-// import { useAuthStore } from '@/stores/useAuthStore'; // Temporarily disabled
+import { useAuthStore } from '@/stores/useAuthStore';
 import { supabase } from '@/config/supabase';
 
 export default function VerifyEmail() {
   const [isLoading, setIsLoading] = useState(false);
   const [isVerifying, setIsVerifying] = useState(true);
-  // Mock function to replace useAuthStore while it's broken
-  const verifyEmail = async (email: string, code: string) => {
-    console.log('Mock email verification for:', email);
-  };
-  // const { verifyEmail } = useAuthStore(); // Temporarily disabled
+  const { verifyEmail } = useAuthStore();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -21,58 +17,79 @@ export default function VerifyEmail() {
     // Check if user is coming from Supabase email confirmation
     const checkSession = async () => {
       try {
+        console.log('🔍 Checking for Supabase session after email confirmation...');
         const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('❌ Session check error:', error);
+          setIsVerifying(false);
+          return;
+        }
         
         if (session?.user) {
           // User confirmed email via Supabase - THIS IS THE PROPER WAY
           console.log('✅ Email confirmed via Supabase:', session.user.email);
+          console.log('📧 Email confirmed at:', session.user.email_confirmed_at);
+          console.log('👤 User ID:', session.user.id);
           
-          // Create local account for the verified user
-          const userId = 'user-' + Date.now();
+          // Create local account for the verified user using Supabase user ID
+          const userId = session.user.id; // Use Supabase user ID
+          const userEmail = session.user.email || '';
+          
           const newUser = {
             id: userId,
-            email: session.user.email,
+            email: userEmail,
             password: 'supabase-authenticated', // Will use Supabase for login
-            name: session.user.user_metadata?.name || session.user.email.split('@')[0],
+            name: session.user.user_metadata?.name || userEmail.split('@')[0],
             emailVerified: true,
             createdAt: new Date().toISOString(),
           };
 
           const storedUsers = JSON.parse(localStorage.getItem('tradepro-users') || '{}');
-          storedUsers[session.user.email] = newUser;
-          localStorage.setItem('tradepro-users', JSON.stringify(storedUsers));
+          
+          // Check if user already exists
+          if (!storedUsers[userEmail]) {
+            storedUsers[userEmail] = newUser;
+            localStorage.setItem('tradepro-users', JSON.stringify(storedUsers));
+            console.log('✅ Local user account created');
 
-          // Create initial portfolio
-          const portfolios = JSON.parse(localStorage.getItem('tradepro-portfolios') || '{}');
-          portfolios[userId] = {
-            balance: 100000,
-            holdings: [],
-            transactions: [],
-          };
-          localStorage.setItem('tradepro-portfolios', JSON.stringify(portfolios));
+            // Create initial portfolio
+            const portfolios = JSON.parse(localStorage.getItem('tradepro-portfolios') || '{}');
+            if (!portfolios[userId]) {
+              portfolios[userId] = {
+                balance: 100000,
+                holdings: [],
+                transactions: [],
+              };
+              localStorage.setItem('tradepro-portfolios', JSON.stringify(portfolios));
+              console.log('✅ Initial portfolio created');
+            }
+          } else {
+            console.log('ℹ️ User already exists in local storage');
+          }
 
           // Remove from pending if exists
           const pendingUsers = JSON.parse(localStorage.getItem('tradepro-pending-users') || '{}');
-          delete pendingUsers[session.user.email];
-          localStorage.setItem('tradepro-pending-users', JSON.stringify(pendingUsers));
+          if (pendingUsers[userEmail]) {
+            delete pendingUsers[userEmail];
+            localStorage.setItem('tradepro-pending-users', JSON.stringify(pendingUsers));
+            console.log('✅ Removed from pending users');
+          }
 
           toast.success('Email verified successfully! You can now login.');
-          navigate('/login');
+          setTimeout(() => navigate('/login'), 1500);
         } else {
+          console.log('ℹ️ No active session found');
           setIsVerifying(false);
         }
       } catch (error) {
-        console.error('Session check error:', error);
+        console.error('❌ Session check error:', error);
         setIsVerifying(false);
       }
     };
 
-    if (email) {
-      checkSession();
-    } else {
-      setIsVerifying(false);
-    }
-  }, [email, navigate]);
+    checkSession();
+  }, [navigate]);
 
   const handleResendEmail = async () => {
     if (!email) {
@@ -95,10 +112,7 @@ export default function VerifyEmail() {
       // Resend verification email via Supabase
       const { error } = await supabase.auth.resend({
         type: 'signup',
-        email: email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/verify-email`
-        }
+        email: email
       });
 
       if (error) {

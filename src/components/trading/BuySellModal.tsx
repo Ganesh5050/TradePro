@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePortfolioStore } from '@/stores/usePortfolioStore';
-// import { useAuthStore } from '@/stores/useAuthStore'; // Temporarily disabled
+import { useAuthStore } from '@/stores/useAuthStore';
 import { toast } from 'sonner';
 
 interface BuySellModalProps {
@@ -22,9 +22,7 @@ export default function BuySellModal({ open, onClose, stock }: BuySellModalProps
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('buy');
   const { buyStock, sellStock, balance } = usePortfolioStore();
-  // Mock user to replace useAuthStore while it's broken
-  const user = { id: 'demo-user', email: 'demo@example.com', name: 'Demo User' };
-  // const { user } = useAuthStore(); // Temporarily disabled
+  const { user } = useAuthStore();
 
   const total = quantity * stock.price;
 
