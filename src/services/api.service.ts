@@ -1,8 +1,5 @@
 // For localhost development, use the correct backend URL
-const isDevelopment = import.meta.env.DEV;
-const API_BASE = isDevelopment 
-  ? 'http://localhost:3001' 
-  : ''; // Use relative URL for Vercel serverless functions
+const API_BASE = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3001' : 'https://trade-pro-backend.onrender.com');
 
 // Mock data fallback when backend is not available
 const mockStocks = [
@@ -26,7 +23,7 @@ export class ApiService {
       console.log('🔍 API_BASE:', API_BASE);
       console.log('🔍 URL:', url);
       console.log('🔍 Full URL:', fullUrl);
-      
+
       const res = await fetch(fullUrl);
       if (!res.ok) throw new Error('Backend not available');
       return await res.json();
@@ -46,7 +43,7 @@ export class ApiService {
   }
 
   async searchStocks(query: string) {
-    const filtered = mockStocks.filter(s => 
+    const filtered = mockStocks.filter(s =>
       s.symbol.toLowerCase().includes(query.toLowerCase()) ||
       s.name.toLowerCase().includes(query.toLowerCase())
     );
