@@ -92,7 +92,7 @@ const Navbar = () => {
                   backgroundColor: 'rgb(236, 237, 241)'
                 }}
               >
-                <img src="/tradepro logo.png" alt="TradePro Logo" className="w-8 h-8 object-contain" />
+                <img src="/logo.png" alt="TradePro Logo" className="w-8 h-8 object-contain" />
               </div>
               <span className="text-2xl font-bold" style={{ color: 'black' }}>TradePro</span>
             </Link>
