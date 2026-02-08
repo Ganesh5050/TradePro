@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useStockStore } from "@/stores/useStockStore";
+import { useAuthStore } from "@/stores/useAuthStore";
 import Navbar from "./components/layout/Navbar";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
@@ -40,11 +41,13 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const AppContent = () => {
+  const { checkAuth } = useAuthStore();
   const { fetchStocks, fetchIndices } = useStockStore();
 
-  // Fetch all data once on app startup and keep refreshing
+  // Initialize auth and fetch data
   useEffect(() => {
-    console.log('🚀 App: Loading all stocks and indices data on startup...');
+    console.log('🚀 App: Initializing...');
+    checkAuth(); // Restore session
     fetchStocks();
     fetchIndices();
 
