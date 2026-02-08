@@ -18,7 +18,7 @@ const FooterContent = () => {
                                     backgroundColor: 'rgb(236, 237, 241)'
                                 }}
                             >
-                                <img src="/logo.png" alt="TradePro Logo" className="w-6 h-6 object-contain" />
+                                <img src="/tradepro logo.png" alt="TradePro Logo" className="w-6 h-6 object-contain" />
                             </div>
                             <span className="text-2xl font-bold">TradePro Elite</span>
                         </div>
