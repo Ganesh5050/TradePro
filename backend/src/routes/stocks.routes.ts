@@ -20,9 +20,9 @@ router.get('/env', async (req, res) => {
     };
     res.json(result);
   } catch (error: any) {
-    res.status(500).json({ 
-      success: false, 
-      error: error.message 
+    res.status(500).json({
+      success: false,
+      error: error.message
     });
   }
 });
@@ -31,13 +31,13 @@ router.get('/env', async (req, res) => {
 router.get('/debug', async (req, res) => {
   try {
     console.log('🔍 Debug: Testing Google Sheets URLs...');
-    
+
     const stocksUrl = config.googleSheets.stocksUrl;
     const indicesUrl = config.googleSheets.indicesUrl;
-    
+
     console.log('Stocks URL:', stocksUrl);
     console.log('Indices URL:', indicesUrl);
-    
+
     // Test stocks URL
     const stocksResponse = await axios.get(stocksUrl, {
       headers: {
@@ -46,7 +46,7 @@ router.get('/debug', async (req, res) => {
       },
       timeout: 10000
     });
-    
+
     // Test indices URL
     const indicesResponse = await axios.get(indicesUrl, {
       headers: {
@@ -55,7 +55,7 @@ router.get('/debug', async (req, res) => {
       },
       timeout: 10000
     });
-    
+
     const result = {
       success: true,
       stocks: {
@@ -73,12 +73,12 @@ router.get('/debug', async (req, res) => {
         preview: indicesResponse.data?.substring(0, 500) || 'No data'
       }
     };
-    
+
     res.json(result);
   } catch (error: any) {
     console.error('Debug error:', error.message);
-    res.status(500).json({ 
-      success: false, 
+    res.status(500).json({
+      success: false,
       error: error.message,
       details: error.code || error.response?.status || 'Unknown'
     });
@@ -89,7 +89,7 @@ router.get('/debug', async (req, res) => {
 router.get('/all', async (req, res) => {
   try {
     const stocks = await googleSheetsService.fetchStocks();
-    res.json({ success: true, data: stocks, count: stocks.length });
+    res.json(stocks); // Return array directly to match frontend expectation
   } catch (error) {
     res.status(500).json({ success: false, error: 'Failed to fetch stocks' });
   }
@@ -100,7 +100,7 @@ router.get('/:symbol', async (req, res) => {
   try {
     await googleSheetsService.fetchStocks();
     const stock = googleSheetsService.getStockBySymbol(req.params.symbol);
-    
+
     if (stock) {
       res.json({ success: true, data: stock });
     } else {
@@ -131,7 +131,7 @@ router.get('/search/query', async (req, res) => {
 router.get('/indices/all', async (req, res) => {
   try {
     const indices = await googleSheetsService.fetchIndices();
-    res.json({ success: true, data: indices, count: indices.length });
+    res.json(indices); // Return array directly to match frontend expectation
   } catch (error) {
     res.status(500).json({ success: false, error: 'Failed to fetch indices' });
   }
