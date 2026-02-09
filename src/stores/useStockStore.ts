@@ -51,60 +51,35 @@ export const useStockStore = create<StockState>((set, get) => ({
   isLoading: false,
 
   fetchStocks: async () => {
-    set({ isLoading: true });
-
     try {
-      // For localhost development, use the correct backend URL
-      const isDevelopment = import.meta.env.DEV;
-      const API_BASE = isDevelopment
-        ? 'http://localhost:3001'
-        : ''; // Use relative URL for Vercel serverless functions
+      const { googleSheetsService } = await import('@/services/googleSheets');
+      const stocks = await googleSheetsService.fetchStocks();
 
-      console.log('🔍 Stock Store API_BASE:', API_BASE);
-      const response = await fetch(`${API_BASE}/api/stocks/all`);
-      const result = await response.json();
-
-      // Handle both array response and {success, data} wrapper
-      const stocksData = Array.isArray(result) ? result : (result.data || []);
-
-      if (stocksData.length > 0) {
-        console.log('✅ Loaded stocks from Google Sheets:', stocksData.length);
-        set({ stocks: stocksData, isLoading: false });
+      if (stocks.length > 0) {
+        set({ stocks, isLoading: false });
       } else {
-        console.warn('⚠️ No data from API, using mock data');
+        console.warn('⚠️ No data from Google Sheets, using mock data');
         set({ stocks: mockStocks, isLoading: false });
       }
     } catch (error) {
-      console.error('❌ Failed to fetch stocks from API:', error);
-      console.log('🔄 Using mock data for development');
+      console.error('❌ Failed to fetch stocks:', error);
       set({ stocks: mockStocks, isLoading: false });
     }
   },
 
   fetchIndices: async () => {
     try {
-      // For localhost development, use the correct backend URL
-      const isDevelopment = import.meta.env.DEV;
-      const API_BASE = isDevelopment
-        ? 'http://localhost:3001'
-        : ''; // Use relative URL for Vercel serverless functions
+      const { googleSheetsService } = await import('@/services/googleSheets');
+      const indices = await googleSheetsService.fetchIndices();
 
-      console.log('🔍 Indices Store API_BASE:', API_BASE);
-      const response = await fetch(`${API_BASE}/api/stocks/indices/all`);
-      const result = await response.json();
-
-      // Handle both array response and {success, data} wrapper
-      const indicesData = Array.isArray(result) ? result : (result.data || []);
-
-      if (indicesData.length > 0) {
-        console.log('✅ Loaded indices from Google Sheets:', indicesData.length);
-        set({ indices: indicesData });
+      if (indices.length > 0) {
+        set({ indices });
       } else {
-        console.warn('⚠️ No indices from API, using mock data');
+        console.warn('⚠️ No indices from Google Sheets, using mock data');
         set({ indices: mockIndices });
       }
     } catch (error) {
-      console.error('❌ Failed to fetch indices from API:', error);
+      console.error('❌ Failed to fetch indices:', error);
       set({ indices: mockIndices });
     }
   },
