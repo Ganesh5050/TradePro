@@ -1,5 +1,5 @@
 // For localhost development, use the correct backend URL
-const API_BASE = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3001' : 'https://trade-pro-backend.onrender.com');
+const API_BASE = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3001' : 'https://trade-pro-backend.onrender.com');
 
 // Mock data fallback when backend is not available
 const mockStocks = [
