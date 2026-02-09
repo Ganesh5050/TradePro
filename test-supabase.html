@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Supabase Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+    <h1>Supabase Authentication Test</h1>
+
+    <div>
+        <h2>Sign Up</h2>
+        <input type="email" id="signupEmail" placeholder="Email" value="test@test.com">
+        <input type="password" id="signupPassword" placeholder="Password" value="test123456">
+        <button onclick="testSignup()">Sign Up</button>
+    </div>
+
+    <div>
+        <h2>Login</h2>
+        <input type="email" id="loginEmail" placeholder="Email" value="test@test.com">
+        <input type="password" id="loginPassword" placeholder="Password" value="test123456">
+        <button onclick="testLogin()">Login</button>
+    </div>
+
+    <div>
+        <h2>Results:</h2>
+        <pre id="results"></pre>
+    </div>
+
+    <script>
+        const supabaseUrl = 'https://ycjdrsymcumenbbkffyx.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InljamRyc3ltY3VtZW5iYmtmZnl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYyOTY0MDQsImV4cCI6MjA3MTg3MjQwNH0.8E4MJxjYdJA1pjxFEy8WjB54Cjq96tr2MrrSjQN86bo';
+
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        async function testSignup() {
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+
+            console.log('Testing signup with:', email, password);
+
+            const { data, error } = await supabase.auth.signUp({
+                email: email,
+                password: password
+            });
+
+            document.getElementById('results').textContent = JSON.stringify({
+                success: !error,
+                data: data,
+                error: error
+            }, null, 2);
+
+            console.log('Signup result:', { data, error });
+        }
+
+        async function testLogin() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            console.log('Testing login with:', email, password);
+
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
+
+            document.getElementById('results').textContent = JSON.stringify({
+                success: !error,
+                data: data,
+                error: error
+            }, null, 2);
+
+            console.log('Login result:', { data, error });
+        }
+    </script>
+</body>
+
+</html>

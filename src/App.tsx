@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useStockStore } from "@/stores/useStockStore";
 import { useAuthStore } from "@/stores/useAuthStore";
 import Navbar from "./components/layout/Navbar";
+import ProtectedRoute from "./components/ProtectedRoute";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -41,10 +42,9 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const AppContent = () => {
-  const { checkAuth } = useAuthStore();
   const { fetchStocks, fetchIndices } = useStockStore();
+  const { checkAuth } = useAuthStore();
 
-  // Initialize auth and fetch data
   useEffect(() => {
     console.log('🚀 App: Initializing...');
     checkAuth(); // Restore session
@@ -64,35 +64,39 @@ const AppContent = () => {
     <div className="min-h-screen bg-white">
       <Navbar />
       <Routes>
+        {/* Public Routes */}
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/stock/:symbol" element={<StockDetail />} />
-        <Route path="/index/:symbol" element={<IndexDetail />} />
-        <Route path="/portfolio" element={<Portfolio />} />
-        <Route path="/learn" element={<Learn />} />
-        <Route path="/leaderboard" element={<Leaderboard />} />
-        <Route path="/news" element={<News />} />
-        <Route path="/watchlist" element={<Watchlist />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/alerts" element={<PriceAlertsPage />} />
-        <Route path="/technical-analysis" element={<TechnicalAnalysis />} />
-        <Route path="/events" element={<StockEvents />} />
-        <Route path="/advanced-trading" element={<AdvancedTradingPage />} />
-        <Route path="/advanced/heatmaps" element={<HeatMaps />} />
-        <Route path="/advanced/sectors" element={<Sectors />} />
-        <Route path="/learn/patterns" element={<Patterns />} />
-        <Route path="/learn/recommendations" element={<Recommendations />} />
         <Route path="/rules" element={<Rules />} />
         <Route path="/support" element={<Support />} />
         <Route path="/invite" element={<InviteFriends />} />
         <Route path="/shortcuts" element={<KeyboardShortcuts />} />
         <Route path="/manual" element={<UserManual />} />
-        <Route path="/transactions" element={<Transactions />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/contact" element={<Contact />} />
+
+        {/* Protected Routes - Require Authentication */}
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/stock/:symbol" element={<ProtectedRoute><StockDetail /></ProtectedRoute>} />
+        <Route path="/index/:symbol" element={<ProtectedRoute><IndexDetail /></ProtectedRoute>} />
+        <Route path="/portfolio" element={<ProtectedRoute><Portfolio /></ProtectedRoute>} />
+        <Route path="/learn" element={<ProtectedRoute><Learn /></ProtectedRoute>} />
+        <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
+        <Route path="/news" element={<ProtectedRoute><News /></ProtectedRoute>} />
+        <Route path="/watchlist" element={<ProtectedRoute><Watchlist /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+        <Route path="/alerts" element={<ProtectedRoute><PriceAlertsPage /></ProtectedRoute>} />
+        <Route path="/technical-analysis" element={<ProtectedRoute><TechnicalAnalysis /></ProtectedRoute>} />
+        <Route path="/events" element={<ProtectedRoute><StockEvents /></ProtectedRoute>} />
+        <Route path="/advanced-trading" element={<ProtectedRoute><AdvancedTradingPage /></ProtectedRoute>} />
+        <Route path="/advanced/heatmaps" element={<ProtectedRoute><HeatMaps /></ProtectedRoute>} />
+        <Route path="/advanced/sectors" element={<ProtectedRoute><Sectors /></ProtectedRoute>} />
+        <Route path="/learn/patterns" element={<ProtectedRoute><Patterns /></ProtectedRoute>} />
+        <Route path="/learn/recommendations" element={<ProtectedRoute><Recommendations /></ProtectedRoute>} />
+        <Route path="/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />
+        <Route path="/about" element={<ProtectedRoute><About /></ProtectedRoute>} />
+        <Route path="/contact" element={<ProtectedRoute><Contact /></ProtectedRoute>} />
+
         <Route path="*" element={<NotFound />} />
       </Routes>
     </div>

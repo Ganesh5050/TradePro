@@ -49,24 +49,27 @@ export const useStockStore = create<StockState>((set, get) => ({
   watchlist: [],
   selectedStock: null,
   isLoading: false,
-  
+
   fetchStocks: async () => {
     set({ isLoading: true });
-    
+
     try {
       // For localhost development, use the correct backend URL
       const isDevelopment = import.meta.env.DEV;
-      const API_BASE = isDevelopment 
-        ? 'http://localhost:3001' 
+      const API_BASE = isDevelopment
+        ? 'http://localhost:3001'
         : ''; // Use relative URL for Vercel serverless functions
-      
+
       console.log('🔍 Stock Store API_BASE:', API_BASE);
       const response = await fetch(`${API_BASE}/api/stocks/all`);
       const result = await response.json();
-      
-      if (result.success && result.data && result.data.length > 0) {
-        console.log('✅ Loaded stocks from Google Sheets:', result.data.length);
-        set({ stocks: result.data, isLoading: false });
+
+      // Handle both array response and {success, data} wrapper
+      const stocksData = Array.isArray(result) ? result : (result.data || []);
+
+      if (stocksData.length > 0) {
+        console.log('✅ Loaded stocks from Google Sheets:', stocksData.length);
+        set({ stocks: stocksData, isLoading: false });
       } else {
         console.warn('⚠️ No data from API, using mock data');
         set({ stocks: mockStocks, isLoading: false });
@@ -77,22 +80,25 @@ export const useStockStore = create<StockState>((set, get) => ({
       set({ stocks: mockStocks, isLoading: false });
     }
   },
-  
+
   fetchIndices: async () => {
     try {
       // For localhost development, use the correct backend URL
       const isDevelopment = import.meta.env.DEV;
-      const API_BASE = isDevelopment 
-        ? 'http://localhost:3001' 
+      const API_BASE = isDevelopment
+        ? 'http://localhost:3001'
         : ''; // Use relative URL for Vercel serverless functions
-      
+
       console.log('🔍 Indices Store API_BASE:', API_BASE);
       const response = await fetch(`${API_BASE}/api/stocks/indices/all`);
       const result = await response.json();
-      
-      if (result.success && result.data && result.data.length > 0) {
-        console.log('✅ Loaded indices from Google Sheets:', result.data.length);
-        set({ indices: result.data });
+
+      // Handle both array response and {success, data} wrapper
+      const indicesData = Array.isArray(result) ? result : (result.data || []);
+
+      if (indicesData.length > 0) {
+        console.log('✅ Loaded indices from Google Sheets:', indicesData.length);
+        set({ indices: indicesData });
       } else {
         console.warn('⚠️ No indices from API, using mock data');
         set({ indices: mockIndices });
@@ -117,19 +123,19 @@ export const useStockStore = create<StockState>((set, get) => ({
       set({ selectedStock: null });
     }
   },
-  
+
   addToWatchlist: (symbol: string) => {
     const { watchlist } = get();
     if (!watchlist.includes(symbol)) {
       set({ watchlist: [...watchlist, symbol] });
     }
   },
-  
+
   removeFromWatchlist: (symbol: string) => {
     const { watchlist } = get();
     set({ watchlist: watchlist.filter(s => s !== symbol) });
   },
-  
+
   setSelectedStock: (stock: Stock | null) => {
     set({ selectedStock: stock });
   },
