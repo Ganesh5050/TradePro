@@ -41,13 +41,13 @@ async function fetchStocksData() {
     console.log('URL:', sheetUrl);
     const response = await fetch(sheetUrl);
     const csvText = await response.text();
-    
+
     console.log('Response length:', csvText.length);
     console.log('Response preview:', csvText.substring(0, 200));
-    
+
     const lines = csvText.split('\n');
     const headers = lines[0].split(',').map(h => h.trim());
-    
+
     stocksCache = lines.slice(1)
       .filter(line => line.trim())
       .map(line => {
@@ -59,7 +59,7 @@ async function fetchStocksData() {
         return stock;
       })
       .filter(stock => stock.SYMBOL || stock.Symbol);
-    
+
     lastStocksFetch = now;
     console.log(`✅ Fetched ${stocksCache.length} stocks`);
     return stocksCache;
@@ -82,13 +82,13 @@ async function fetchIndicesData() {
     console.log('URL:', sheetUrl);
     const response = await fetch(sheetUrl);
     const csvText = await response.text();
-    
+
     console.log('Response length:', csvText.length);
     console.log('Response preview:', csvText.substring(0, 200));
-    
+
     const lines = csvText.split('\n');
     const headers = lines[0].split(',').map(h => h.trim());
-    
+
     indicesCache = lines.slice(1)
       .filter(line => line.trim())
       .map(line => {
@@ -100,7 +100,7 @@ async function fetchIndicesData() {
         return index;
       })
       .filter(index => index.SYMBOL || index.Symbol || index.INDEX);
-    
+
     lastIndicesFetch = now;
     console.log(`✅ Fetched ${indicesCache.length} indices`);
     return indicesCache;
@@ -112,8 +112,8 @@ async function fetchIndicesData() {
 
 // Health check
 app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
+  res.json({
+    status: 'ok',
     timestamp: new Date().toISOString(),
     stocks: stocksCache.length,
     indices: indicesCache.length
@@ -138,13 +138,13 @@ app.get('/api/stocks/debug', async (req, res) => {
   try {
     const stocksUrl = process.env.STOCKS_SHEET_URL || 'NOT_SET';
     const indicesUrl = process.env.INDICES_SHEET_URL || 'NOT_SET';
-    
+
     const stocksResponse = await fetch(stocksUrl);
     const indicesResponse = await fetch(indicesUrl);
-    
+
     const stocksText = await stocksResponse.text();
     const indicesText = await indicesResponse.text();
-    
+
     res.json({
       success: true,
       stocks: {
@@ -169,6 +169,15 @@ app.get('/api/stocks/debug', async (req, res) => {
 });
 
 // Stocks API
+app.get('/api/stocks/all', async (req, res) => {
+  try {
+    const stocks = await fetchStocksData();
+    res.json(stocks); // Return array directly to match frontend expectation
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to fetch stocks' });
+  }
+});
+
 app.get('/api/stocks', async (req, res) => {
   try {
     const stocks = await fetchStocksData();
@@ -182,7 +191,7 @@ app.get('/api/stock/:symbol', async (req, res) => {
   try {
     const stocks = await fetchStocksData();
     const stock = stocks.find(s => s.Symbol === req.params.symbol);
-    
+
     if (stock) {
       res.json({ success: true, data: stock });
     } else {
@@ -197,15 +206,15 @@ app.get('/api/search', async (req, res) => {
   try {
     const query = (req.query.q as string || '').toLowerCase();
     const stocks = await fetchStocksData();
-    
+
     const results = stocks
-      .filter(s => 
-        s.Symbol?.toLowerCase().includes(query) || 
+      .filter(s =>
+        s.Symbol?.toLowerCase().includes(query) ||
         s.Name?.toLowerCase().includes(query) ||
         s.CompanyName?.toLowerCase().includes(query)
       )
       .slice(0, 20);
-    
+
     res.json({ success: true, count: results.length, data: results });
   } catch (error) {
     res.status(500).json({ success: false, error: 'Search failed' });
@@ -213,6 +222,15 @@ app.get('/api/search', async (req, res) => {
 });
 
 // Indices API
+app.get('/api/stocks/indices/all', async (req, res) => {
+  try {
+    const indices = await fetchIndicesData();
+    res.json(indices); // Return array directly to match frontend expectation
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to fetch indices' });
+  }
+});
+
 app.get('/api/indices', async (req, res) => {
   try {
     const indices = await fetchIndicesData();
@@ -226,7 +244,7 @@ app.get('/api/index/:symbol', async (req, res) => {
   try {
     const indices = await fetchIndicesData();
     const index = indices.find(i => i.Symbol === req.params.symbol);
-    
+
     if (index) {
       res.json({ success: true, data: index });
     } else {
@@ -240,16 +258,16 @@ app.get('/api/index/:symbol', async (req, res) => {
 // Socket.IO for real-time updates
 io.on('connection', (socket) => {
   console.log('🔌 Client connected:', socket.id);
-  
+
   socket.on('subscribe', (symbols: string[]) => {
     console.log('📊 Client subscribed to:', symbols);
     socket.join(symbols);
   });
-  
+
   socket.on('unsubscribe', (symbols: string[]) => {
     symbols.forEach(symbol => socket.leave(symbol));
   });
-  
+
   socket.on('disconnect', () => {
     console.log('❌ Client disconnected:', socket.id);
   });
