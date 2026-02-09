@@ -18,33 +18,7 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      // Demo bypass login - set demo user in store
-      if (email === 'demo@gmail.com' && password === '123') {
-        // Manually set demo user in auth store
-        useAuthStore.setState({
-          user: {
-            id: 'demo-user-123',
-            email: 'demo@gmail.com',
-            name: 'Demo User'
-          },
-          isAuthenticated: true
-        });
-        toast.success('Welcome back! (Demo Mode)', {
-          duration: 5000,
-          style: {
-            background: '#10b981',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            fontSize: '16px',
-            fontWeight: '500',
-          }
-        });
-        navigate('/dashboard');
-        setIsLoading(false);
-        return;
-      }
-
+      // Real Supabase authentication only - no bypass
       await login(email, password);
       toast.success('Welcome back!', {
         duration: 5000,

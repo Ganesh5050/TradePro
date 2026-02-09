@@ -25,20 +25,13 @@ export default function Signup() {
     console.log('VITE_SUPABASE_URL:', import.meta.env.VITE_SUPABASE_URL);
     console.log('VITE_SUPABASE_ANON_KEY exists:', !!import.meta.env.VITE_SUPABASE_ANON_KEY);
     console.log('VITE_SUPABASE_ANON_KEY length:', import.meta.env.VITE_SUPABASE_ANON_KEY?.length);
-    
+
     // Test Supabase connection
     try {
       const { data, error } = await supabase.from('_test_connection').select('*').limit(1);
       console.log('🔌 Supabase connection test:', { data, error });
     } catch (testError) {
       console.error('❌ Supabase connection failed:', testError);
-    }
-
-    // Demo bypass signup
-    if (email === 'demo@gmail.com') {
-      toast.success('Account created successfully! (Demo Mode)');
-      navigate('/dashboard');
-      return;
     }
 
     if (password !== confirmPassword) {
@@ -75,12 +68,12 @@ export default function Signup() {
 
     try {
       const result = await signup(email, password);
-      
+
       if (result.success) {
         toast.success(result.message, {
           duration: 5000,
         });
-        
+
         // Always redirect to verify email page since we require confirmation
         navigate('/verify-email');
       } else {
@@ -96,7 +89,7 @@ export default function Signup() {
           }
         });
       }
-      
+
     } catch (error: any) {
       toast.error(error.message || 'Signup failed', {
         duration: 5000,
@@ -115,7 +108,7 @@ export default function Signup() {
   };
 
   const primaryButtonShadow = 'rgba(61, 61, 61, 0.72) 0px 0.602187px 1.08394px -1.25px, rgba(61, 61, 61, 0.64) 0px 2.28853px 4.11936px -2.5px, rgba(61, 61, 61, 0.25) 0px 10px 18px -3.75px, rgba(0, 0, 0, 0.35) 0px 0.706592px 0.706592px -0.583333px, rgba(0, 0, 0, 0.34) 0px 1.80656px 1.80656px -1.16667px, rgba(0, 0, 0, 0.33) 0px 3.62176px 3.62176px -1.75px, rgba(0, 0, 0, 0.3) 0px 6.8656px 6.8656px -2.33333px, rgba(0, 0, 0, 0.26) 0px 13.6468px 13.6468px -2.91667px, rgba(0, 0, 0, 0.15) 0px 30px 30px -3.5px';
-  
+
   const secondaryButtonShadow = 'rgba(158, 158, 158, 0.69) 0px 0.706592px 0.706592px -0.583333px, rgba(158, 158, 158, 0.68) 0px 1.80656px 1.80656px -1.16667px, rgba(158, 158, 158, 0.65) 0px 3.62176px 3.62176px -1.75px, rgba(158, 158, 158, 0.61) 0px 6.8656px 6.8656px -2.33333px, rgba(158, 158, 158, 0.52) 0px 13.6468px 13.6468px -2.91667px, rgba(158, 158, 158, 0.3) 0px 30px 30px -3.5px, rgb(255, 255, 255) 0px 3px 1px 0px inset';
 
   return (
@@ -217,7 +210,7 @@ export default function Signup() {
             <p className="text-xs text-gray-500 mt-3 text-center">
               You can re-send verification email after 1 minute if needed
             </p>
-            
+
             <p className="text-xs text-orange-600 mt-2 text-center">
               ⚠️ Check your spam folder if you don't see the email
             </p>
