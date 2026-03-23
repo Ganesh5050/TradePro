@@ -8,6 +8,7 @@ import { useStockStore } from "@/stores/useStockStore";
 import { useAuthStore } from "@/stores/useAuthStore";
 import Navbar from "./components/layout/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AIAssistant from "./components/trading/AIAssistant";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -61,8 +62,9 @@ const AppContent = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white relative">
       <Navbar />
+      <AIAssistant />
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Index />} />
