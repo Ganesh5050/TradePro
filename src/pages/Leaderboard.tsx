@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { apiService } from '@/services/api.service';
+import { supabase } from '@/config/supabase';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Trophy, Medal } from 'lucide-react';
@@ -14,9 +14,23 @@ export default function Leaderboard() {
 
   const loadLeaderboard = async () => {
     try {
-      const result = await apiService.getLeaderboard(100);
-      if (result.success) {
-        setLeaderboard(result.data);
+      setIsLoading(true);
+      // Fetch directly from the Supabase profiles table
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, username, total_pnl')
+        .order('total_pnl', { ascending: false })
+        .limit(100);
+
+      if (error) {
+        console.error('Supabase fetch error:', error);
+        // If the table doesn't exist yet, we fail gracefully
+        setLeaderboard([]);
+        return;
+      }
+
+      if (data) {
+        setLeaderboard(data);
       }
     } catch (error) {
       console.error('Failed to load leaderboard:', error);
@@ -52,7 +66,7 @@ export default function Leaderboard() {
               </TableHeader>
               <TableBody>
                 {leaderboard.map((entry, index) => (
-                  <TableRow key={entry.user_id}>
+                  <TableRow key={entry.id || index}>
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
                         {index === 0 && <Trophy className="h-5 w-5 text-yellow-500" />}
@@ -61,9 +75,9 @@ export default function Leaderboard() {
                         {index + 1}
                       </div>
                     </TableCell>
-                    <TableCell>User {entry.user_id.slice(0, 8)}</TableCell>
-                    <TableCell className="text-right font-bold">
-                      ₹{entry.balance.toLocaleString()}
+                    <TableCell className="font-semibold text-blue-600">{entry.username}</TableCell>
+                    <TableCell className="text-right font-bold text-green-600">
+                      ₹{(Number(entry.total_pnl) || 0).toLocaleString()}
                     </TableCell>
                   </TableRow>
                 ))}

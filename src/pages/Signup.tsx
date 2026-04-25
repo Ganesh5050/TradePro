@@ -67,7 +67,8 @@ export default function Signup() {
     setIsLoading(true);
 
     try {
-      const result = await signup(email, password);
+      const fullName = `${firstName} ${lastName}`.trim();
+      const result = await signup(email, password, fullName);
 
       if (result.success) {
         toast.success(result.message, {

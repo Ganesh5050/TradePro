@@ -107,6 +107,7 @@ export const useAuthStore = create<AuthState>((set) => ({
                 options: {
                     data: {
                         name: name || email.split('@')[0],
+                        username: name || email.split('@')[0],
                     }
                 }
             });

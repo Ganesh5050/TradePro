@@ -29,6 +29,24 @@ interface PortfolioState {
   fetchTransactions: (userId: string) => Promise<void>;
 }
 
+// Helper to sync user's entire portfolio state to Supabase for consistency and leaderboard
+const syncToSupabase = async (userId: string, userPortfolio: any) => {
+  try {
+    const investedValue = userPortfolio.holdings.reduce((sum: number, h: Portfolio) => sum + (h.quantity * h.avg_price), 0);
+    const totalValue = userPortfolio.balance + investedValue;
+
+    await supabase
+      .from('profiles')
+      .update({ 
+        total_pnl: totalValue,
+        portfolio_data: userPortfolio 
+      })
+      .eq('id', userId);
+  } catch (error) {
+    console.error('Failed to sync to Supabase:', error);
+  }
+};
+
 export const usePortfolioStore = create<PortfolioState>((set, get) => ({
   holdings: [],
   transactions: [],
@@ -38,8 +56,25 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
   fetchPortfolio: async (userId: string) => {
     set({ isLoading: true });
     try {
-      const portfolios = JSON.parse(localStorage.getItem('tradepro-portfolios') || '{}');
-      const userPortfolio = portfolios[userId] || { balance: 1000000, holdings: [], transactions: [] }; // ₹10 lakhs for new users
+      // 1. Try to fetch from Supabase first (True Consistency)
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('portfolio_data')
+        .eq('id', userId)
+        .single();
+
+      let userPortfolio;
+
+      if (!error && data?.portfolio_data) {
+        userPortfolio = data.portfolio_data;
+      } else {
+        // Fallback to local storage if Supabase is empty for this user
+        const portfolios = JSON.parse(localStorage.getItem('tradepro-portfolios') || '{}');
+        userPortfolio = portfolios[userId] || { balance: 1000000, holdings: [], transactions: [] };
+        
+        // Sync the initial default state to Supabase
+        await syncToSupabase(userId, userPortfolio);
+      }
 
       set({ 
         balance: userPortfolio.balance,
@@ -47,6 +82,12 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
         transactions: userPortfolio.transactions,
         isLoading: false 
       });
+
+      // Also update local storage as a backup
+      const portfolios = JSON.parse(localStorage.getItem('tradepro-portfolios') || '{}');
+      portfolios[userId] = userPortfolio;
+      localStorage.setItem('tradepro-portfolios', JSON.stringify(portfolios));
+
     } catch (error) {
       console.error('Failed to fetch portfolio:', error);
       set({ isLoading: false });
@@ -63,7 +104,11 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
       }
 
       const portfolios = JSON.parse(localStorage.getItem('tradepro-portfolios') || '{}');
-      const userPortfolio = portfolios[userId] || { balance: 1000000, holdings: [], transactions: [] }; // ₹10 lakhs for new users
+      const userPortfolio = { 
+        balance: get().balance, 
+        holdings: [...get().holdings], 
+        transactions: [...get().transactions] 
+      };
 
       // Create transaction
       const transaction: Transaction = {
@@ -102,11 +147,19 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
       // Update balance
       userPortfolio.balance = balance - total;
 
+      // Save to localStorage
       portfolios[userId] = userPortfolio;
       localStorage.setItem('tradepro-portfolios', JSON.stringify(portfolios));
 
-      // Refresh portfolio
-      await get().fetchPortfolio(userId);
+      // ** CRITICAL FIX: Sync to Supabase permanently **
+      await syncToSupabase(userId, userPortfolio);
+
+      // Refresh portfolio state in UI
+      set({ 
+        balance: userPortfolio.balance,
+        holdings: userPortfolio.holdings,
+        transactions: userPortfolio.transactions
+      });
     } catch (error: any) {
       console.error('Buy stock error:', error);
       throw new Error(error.message || 'Failed to buy stock');
@@ -125,7 +178,11 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
       }
 
       const portfolios = JSON.parse(localStorage.getItem('tradepro-portfolios') || '{}');
-      const userPortfolio = portfolios[userId] || { balance: 1000000, holdings: [], transactions: [] }; // ₹10 lakhs for new users
+      const userPortfolio = { 
+        balance: get().balance, 
+        holdings: [...get().holdings], 
+        transactions: [...get().transactions] 
+      };
 
       // Create transaction
       const transaction: Transaction = {
@@ -155,11 +212,19 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
       // Update balance
       userPortfolio.balance = balance + total;
 
+      // Save to localStorage
       portfolios[userId] = userPortfolio;
       localStorage.setItem('tradepro-portfolios', JSON.stringify(portfolios));
 
-      // Refresh portfolio
-      await get().fetchPortfolio(userId);
+      // ** CRITICAL FIX: Sync to Supabase permanently **
+      await syncToSupabase(userId, userPortfolio);
+
+      // Refresh portfolio state in UI
+      set({ 
+        balance: userPortfolio.balance,
+        holdings: userPortfolio.holdings,
+        transactions: userPortfolio.transactions
+      });
     } catch (error: any) {
       console.error('Sell stock error:', error);
       throw new Error(error.message || 'Failed to sell stock');
@@ -168,10 +233,19 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
 
   fetchTransactions: async (userId: string) => {
     try {
-      const portfolios = JSON.parse(localStorage.getItem('tradepro-portfolios') || '{}');
-      const userPortfolio = portfolios[userId] || { balance: 1000000, holdings: [], transactions: [] }; // ₹10 lakhs for new users
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('portfolio_data')
+        .eq('id', userId)
+        .single();
 
-      set({ transactions: userPortfolio.transactions.slice(0, 50) });
+      if (!error && data?.portfolio_data) {
+        set({ transactions: data.portfolio_data.transactions.slice(0, 50) });
+      } else {
+        const portfolios = JSON.parse(localStorage.getItem('tradepro-portfolios') || '{}');
+        const userPortfolio = portfolios[userId] || { balance: 1000000, holdings: [], transactions: [] };
+        set({ transactions: userPortfolio.transactions.slice(0, 50) });
+      }
     } catch (error) {
       console.error('Failed to fetch transactions:', error);
     }

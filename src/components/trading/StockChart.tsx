@@ -125,17 +125,28 @@ export default function StockChart({ symbol, className }: StockChartProps) {
 
         chartRef.current = chart;
 
+        let isDisposed = false;
+
         const handleResize = () => {
-            if (chartContainerRef.current) {
-                chart.applyOptions({ width: chartContainerRef.current.clientWidth });
+            if (chartContainerRef.current && !isDisposed) {
+                try {
+                    chart.applyOptions({ width: chartContainerRef.current.clientWidth });
+                } catch (e) {
+                    // Ignore disposed errors
+                }
             }
         };
 
         window.addEventListener('resize', handleResize);
 
         return () => {
+            isDisposed = true;
             window.removeEventListener('resize', handleResize);
-            chart.remove();
+            try {
+                chart.remove();
+            } catch (e) {
+                // Ignore if already disposed
+            }
         };
     }, [chartData]);
 
