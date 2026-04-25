@@ -21,7 +21,6 @@ export default function Leaderboard() {
       const { data, error } = await supabase
         .from('profiles')
         .select('id, username, total_pnl')
-        .order('total_pnl', { ascending: false })
         .limit(100);
 
       if (error) {
@@ -32,7 +31,23 @@ export default function Leaderboard() {
       }
 
       if (data) {
-        setLeaderboard(data);
+        // Process data to calculate true PNL
+        const processedData = data.map(entry => {
+          const dbValue = Number(entry.total_pnl) || 0;
+          // If the db value is 0 (hasn't traded yet), their true value is the initial 1,000,000
+          const truePortfolioValue = dbValue === 0 ? 1000000 : dbValue;
+          const pnl = truePortfolioValue - 1000000;
+          return {
+            ...entry,
+            truePortfolioValue,
+            pnl
+          };
+        });
+
+        // Sort by PNL (highest profit first)
+        processedData.sort((a, b) => b.pnl - a.pnl);
+
+        setLeaderboard(processedData);
       }
     } catch (error) {
       console.error('Failed to load leaderboard:', error);
@@ -63,7 +78,7 @@ export default function Leaderboard() {
                 <TableRow>
                   <TableHead className="w-16">Rank</TableHead>
                   <TableHead>User</TableHead>
-                  <TableHead className="text-right">Portfolio Value</TableHead>
+                  <TableHead className="text-right">Net PNL</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -94,8 +109,8 @@ export default function Leaderboard() {
                           )}
                         </div>
                       </TableCell>
-                      <TableCell className="text-right font-bold text-green-600">
-                        ₹{(Number(entry.total_pnl) || 0).toLocaleString()}
+                      <TableCell className={`text-right font-bold ${entry.pnl > 0 ? 'text-green-600' : entry.pnl < 0 ? 'text-red-600' : 'text-gray-500'}`}>
+                        {entry.pnl > 0 ? '+' : ''}₹{entry.pnl.toLocaleString()}
                       </TableCell>
                     </TableRow>
                   );
