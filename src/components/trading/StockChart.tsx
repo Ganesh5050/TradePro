@@ -84,12 +84,6 @@ export default function StockChart({ symbol, className }: StockChartProps) {
     useEffect(() => {
         if (!chartContainerRef.current) return;
 
-        // Cleanup
-        if (chartRef.current) {
-            chartRef.current.remove();
-            chartRef.current = null;
-        }
-
         const chart = createChart(chartContainerRef.current, {
             layout: {
                 background: { type: ColorType.Solid, color: 'white' },
