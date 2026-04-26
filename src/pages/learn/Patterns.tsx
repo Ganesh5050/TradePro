@@ -11,6 +11,7 @@ const candlestickPatterns = [
     bullish: false,
     bearish: false,
     neutral: true,
+    image: '/candles/doji.jpg'
   },
   {
     name: 'Hammer',
@@ -19,6 +20,7 @@ const candlestickPatterns = [
     description: 'Small body at the top with a long lower shadow. Appears at the bottom of a downtrend, signaling potential reversal.',
     bullish: true,
     bearish: false,
+    image: '/candles/hammer.jpeg'
   },
   {
     name: 'Shooting Star',
@@ -27,6 +29,7 @@ const candlestickPatterns = [
     description: 'Small body at the bottom with a long upper shadow. Appears at the top of an uptrend, signaling potential reversal.',
     bullish: false,
     bearish: true,
+    image: '/candles/shooting star.jpg'
   },
   {
     name: 'Bullish Engulfing',
@@ -35,6 +38,7 @@ const candlestickPatterns = [
     description: 'A large green candle completely engulfs the previous red candle, indicating strong buying pressure.',
     bullish: true,
     bearish: false,
+    image: '/candles/bullishenglufing.png'
   },
   {
     name: 'Bearish Engulfing',
@@ -43,6 +47,7 @@ const candlestickPatterns = [
     description: 'A large red candle completely engulfs the previous green candle, indicating strong selling pressure.',
     bullish: false,
     bearish: true,
+    image: '/candles/bearsih englsufing.jpg'
   },
   {
     name: 'Morning Star',
@@ -51,6 +56,7 @@ const candlestickPatterns = [
     description: 'Three-candle pattern: large red candle, small-bodied candle, then large green candle. Strong bullish reversal signal.',
     bullish: true,
     bearish: false,
+    image: '/candles/morinng start.png'
   },
   {
     name: 'Evening Star',
@@ -59,6 +65,7 @@ const candlestickPatterns = [
     description: 'Three-candle pattern: large green candle, small-bodied candle, then large red candle. Strong bearish reversal signal.',
     bullish: false,
     bearish: true,
+    image: '/candles/evning start.jpeg'
   },
   {
     name: 'Three White Soldiers',
@@ -67,6 +74,7 @@ const candlestickPatterns = [
     description: 'Three consecutive long green candles with higher closes. Strong bullish continuation pattern.',
     bullish: true,
     bearish: false,
+    image: '/candles/threee white soldiers.jpg'
   },
   {
     name: 'Three Black Crows',
@@ -75,6 +83,7 @@ const candlestickPatterns = [
     description: 'Three consecutive long red candles with lower closes. Strong bearish continuation pattern.',
     bullish: false,
     bearish: true,
+    image: '/candles/three black corwos.png'
   },
   {
     name: 'Harami',
@@ -84,6 +93,7 @@ const candlestickPatterns = [
     bullish: false,
     bearish: false,
     neutral: true,
+    image: '/candles/harami.png'
   },
 ];
 
@@ -263,8 +273,12 @@ export default function Patterns() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="mb-3 h-32 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
-                    <span className="text-gray-400 text-sm">Pattern Illustration</span>
+                  <div className="mb-3 h-48 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200 overflow-hidden p-2">
+                    {pattern.image ? (
+                      <img src={pattern.image} alt={pattern.name} className="w-full h-full object-contain mix-blend-multiply" />
+                    ) : (
+                      <span className="text-gray-400 text-sm">Pattern Illustration</span>
+                    )}
                   </div>
                   <p className="text-sm text-gray-600">{pattern.description}</p>
                 </CardContent>
