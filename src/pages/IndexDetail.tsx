@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, Activity } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useStockStore } from '@/stores/useStockStore';
+import StockChart from '@/components/trading/StockChart';
 
 const IndexDetail = () => {
   const { symbol } = useParams();
@@ -122,16 +123,9 @@ const IndexDetail = () => {
           </Card>
 
           {/* Chart Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Index Performance</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-96 flex items-center justify-center text-muted-foreground">
-                Chart visualization will be integrated here
-              </div>
-            </CardContent>
-          </Card>
+          <div className="mt-6">
+            <StockChart symbol={symbol || ''} />
+          </div>
         </motion.div>
       </div>
     </div>
