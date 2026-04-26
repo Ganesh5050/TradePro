@@ -105,6 +105,7 @@ const chartPatterns = [
     description: 'Three peaks with the middle peak (head) higher than the other two (shoulders). Indicates trend reversal from bullish to bearish.',
     bullish: false,
     bearish: true,
+    image: '/candles/movement/head and shoulder.jpeg',
   },
   {
     name: 'Inverse Head and Shoulders',
@@ -113,6 +114,7 @@ const chartPatterns = [
     description: 'Three troughs with the middle trough (head) lower than the other two (shoulders). Indicates trend reversal from bearish to bullish.',
     bullish: true,
     bearish: false,
+    image: '/candles/movement/inverse head na shoudle r.jpeg',
   },
   {
     name: 'Rising Wedge',
@@ -121,6 +123,7 @@ const chartPatterns = [
     description: 'Price consolidates between two upward sloping trendlines that converge. Usually breaks downward.',
     bullish: false,
     bearish: true,
+    image: '/candles/movement/rising wege.jpg',
   },
   {
     name: 'Falling Wedge',
@@ -129,6 +132,7 @@ const chartPatterns = [
     description: 'Price consolidates between two downward sloping trendlines that converge. Usually breaks upward.',
     bullish: true,
     bearish: false,
+    image: '/candles/movement/falign wedge.jpg',
   },
   {
     name: 'Double Top',
@@ -137,6 +141,7 @@ const chartPatterns = [
     description: 'Two peaks at approximately the same level. Indicates strong resistance and potential trend reversal.',
     bullish: false,
     bearish: true,
+    image: '/candles/movement/Double_top_pattern.2e16d0ba.fill-1600x900.jpg',
   },
   {
     name: 'Double Bottom',
@@ -145,6 +150,7 @@ const chartPatterns = [
     description: 'Two troughs at approximately the same level. Indicates strong support and potential trend reversal.',
     bullish: true,
     bearish: false,
+    image: '/candles/movement/double bottom.png',
   },
   {
     name: 'Triple Top',
@@ -153,6 +159,7 @@ const chartPatterns = [
     description: 'Three peaks at approximately the same level. Strong bearish reversal pattern.',
     bullish: false,
     bearish: true,
+    image: '/candles/movement/Triple-Top-Pattern.png',
   },
   {
     name: 'Triple Bottom',
@@ -169,6 +176,7 @@ const chartPatterns = [
     description: 'Flat top with rising lows. Bullish continuation pattern indicating accumulation.',
     bullish: true,
     bearish: false,
+    image: '/candles/movement/ascending traigle.png',
   },
   {
     name: 'Descending Triangle',
@@ -177,6 +185,7 @@ const chartPatterns = [
     description: 'Flat bottom with declining highs. Bearish continuation pattern indicating distribution.',
     bullish: false,
     bearish: true,
+    image: '/candles/movement/descinf traignle.png',
   },
   {
     name: 'Symmetrical Triangle',
@@ -186,6 +195,7 @@ const chartPatterns = [
     bullish: false,
     bearish: false,
     neutral: true,
+    image: '/candles/movement/sysmetical traingle.png',
   },
   {
     name: 'Cup and Handle',
@@ -194,6 +204,7 @@ const chartPatterns = [
     description: 'U-shaped cup followed by a small downward drift (handle). Strong bullish continuation pattern.',
     bullish: true,
     bearish: false,
+    image: '/candles/movement/cup and handle.jpg',
   },
   {
     name: 'Flag Pattern',
@@ -203,6 +214,7 @@ const chartPatterns = [
     bullish: false,
     bearish: false,
     neutral: true,
+    image: '/candles/movement/flag.jpg',
   },
   {
     name: 'Pennant Pattern',
@@ -212,6 +224,7 @@ const chartPatterns = [
     bullish: false,
     bearish: false,
     neutral: true,
+    image: '/candles/movement/pennant patterns.png',
   },
 ];
 
@@ -310,8 +323,12 @@ export default function Patterns() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="mb-3 h-32 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
-                    <span className="text-gray-400 text-sm">Pattern Illustration</span>
+                  <div className="mb-3 h-48 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200 overflow-hidden p-2">
+                    {pattern.image ? (
+                      <img src={pattern.image} alt={pattern.name} className="w-full h-full object-contain mix-blend-multiply" />
+                    ) : (
+                      <span className="text-gray-400 text-sm">Pattern Illustration</span>
+                    )}
                   </div>
                   <p className="text-sm text-gray-600">{pattern.description}</p>
                 </CardContent>
