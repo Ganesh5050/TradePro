@@ -7,8 +7,6 @@ import StockCard from '@/components/trading/StockCard';
 import PortfolioSummary from '@/components/trading/PortfolioSummary';
 import { Search, Filter, ChevronDown, ArrowUp, ArrowDown, Cpu, Play, ChevronRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { runStressTest, StressTestResult } from '@/utils/stress-test-simulation';
-import { googleSheetsService } from '@/services/googleSheets';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,12 +23,6 @@ export default function Dashboard() {
   const [selectedStock, setSelectedStock] = useState<any>(null);
   const [indicesFilter, setIndicesFilter] = useState<'neutral' | 'desc' | 'asc'>('neutral');
   const [stocksFilter, setStocksFilter] = useState<'alpha-asc' | 'alpha-desc' | 'high' | 'low'>('alpha-asc');
-
-  // System Performance Monitor state
-  const [showPerfMonitor, setShowPerfMonitor] = useState(false);
-  const [isRunningTest, setIsRunningTest] = useState(false);
-  const [testLog, setTestLog] = useState<string[]>([]);
-  const [testResult, setTestResult] = useState<StressTestResult | null>(null);
 
   // Fetch portfolio data when user is authenticated
   useEffect(() => {
@@ -121,22 +113,6 @@ export default function Dashboard() {
   const profitLoss = currentValue - totalInvested;
   const profitLossPercent = totalInvested > 0 ? (profitLoss / totalInvested) * 100 : 0;
 
-  const handleRunStressTest = async () => {
-    setIsRunningTest(true);
-    setTestLog([]);
-    setTestResult(null);
-    try {
-      const result = await runStressTest((msg) => {
-        setTestLog(prev => [...prev, msg]);
-      });
-      setTestResult(result);
-    } catch (e) {
-      setTestLog(prev => [...prev, `❌ Test error: ${e}`]);
-    } finally {
-      setIsRunningTest(false);
-    }
-  };
-
   return (
     <div style={{ 
       minHeight: '100vh', 
@@ -158,68 +134,6 @@ export default function Dashboard() {
             {isAuthenticated ? `Welcome back, ${user?.email || 'Trader'}` : 'Browse and trade stocks'}
           </p>
         </div>
-
-        {/* ===== SYSTEM PERFORMANCE MONITOR WIDGET ===== */}
-        <div className="mb-6">
-          <button
-            onClick={() => setShowPerfMonitor(v => !v)}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
-          >
-            <Cpu className="w-4 h-4" />
-            System Performance Monitor
-            <ChevronRight className={`w-4 h-4 transition-transform ${showPerfMonitor ? 'rotate-90' : ''}`} />
-          </button>
-          {showPerfMonitor && (
-            <div className="mt-3 p-4 bg-gray-950 rounded-2xl border border-gray-800 text-white space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-semibold text-sm text-gray-200">DAG State Reconciliation Stress Test</h3>
-                  <p className="text-xs text-gray-500 mt-0.5">Validates that Zustand state updates maintain 60 FPS under peak data load ({stocks.length} stocks)</p>
-                </div>
-                <button
-                  onClick={handleRunStressTest}
-                  disabled={isRunningTest}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 text-white rounded-full transition-colors flex-shrink-0"
-                >
-                  <Play className="w-3.5 h-3.5" />
-                  {isRunningTest ? 'Running...' : 'Run Test'}
-                </button>
-              </div>
-
-              {/* Live log */}
-              {testLog.length > 0 && (
-                <div className="bg-black/40 p-3 rounded-lg font-mono text-xs text-gray-400 space-y-0.5 max-h-28 overflow-y-auto">
-                  {testLog.map((line, i) => <div key={i}>{line}</div>)}
-                </div>
-              )}
-
-              {/* Results */}
-              {testResult && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {[
-                    { label: 'Stocks Updated', value: testResult.totalStocksUpdated.toLocaleString(), color: 'text-white' },
-                    { label: 'Avg FPS', value: `${testResult.avgFps} FPS`, color: testResult.avgFps >= 55 ? 'text-green-400' : 'text-yellow-400' },
-                    { label: 'Min FPS', value: `${testResult.minFps} FPS`, color: testResult.minFps >= 30 ? 'text-green-400' : 'text-red-400' },
-                    { label: 'Dropped Frames', value: `${testResult.droppedFrames}`, color: testResult.droppedFrames === 0 ? 'text-green-400' : 'text-yellow-400' },
-                    { label: 'Total Duration', value: `${testResult.durationMs} ms`, color: 'text-white' },
-                    { label: 'Pipeline Stats', value: `${googleSheetsService.getStats().successRatePercent}% success`, color: 'text-green-400' },
-                  ].map(({ label, value, color }) => (
-                    <div key={label} className="bg-gray-900/60 p-2 rounded-lg border border-gray-800">
-                      <p className="text-gray-500 text-[10px] uppercase tracking-wider">{label}</p>
-                      <p className={`font-bold font-mono text-sm mt-0.5 ${color}`}>{value}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {testResult && (
-                <p className="text-[10px] text-gray-600 italic text-right">
-                  Screenshot these results for the paper's "DAG State Reconciliation" validation section.
-                </p>
-              )}
-            </div>
-          )}
-        </div>
-        {/* ===================================================== */}
 
         {/* Portfolio Summary - Only show if authenticated */}
         {isAuthenticated && (

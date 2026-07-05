@@ -39,6 +39,8 @@ import Transactions from "./pages/Transactions";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
+import Research from "./pages/Research";
+import Footer from "./components/layout/Footer";
 
 const queryClient = new QueryClient();
 
@@ -76,6 +78,7 @@ const AppContent = () => {
         <Route path="/invite" element={<InviteFriends />} />
         <Route path="/shortcuts" element={<KeyboardShortcuts />} />
         <Route path="/manual" element={<UserManual />} />
+        <Route path="/research" element={<Research />} />
 
         {/* Protected Routes - Require Authentication */}
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
@@ -101,6 +104,7 @@ const AppContent = () => {
 
         <Route path="*" element={<NotFound />} />
       </Routes>
+      <Footer />
     </div>
   );
 };

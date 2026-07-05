@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Bot, X, Send, TrendingUp, TrendingDown, Minus, Loader2, Play } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStockStore } from '@/stores/useStockStore';
-import { runBenchmark } from '@/utils/performance-benchmark';
 
 interface Message {
   id: string;
@@ -220,55 +219,6 @@ export default function AIAssistant() {
     );
   };
 
-  const runLatencyTest = () => {
-    const testStocks = ['RELIANCE', 'TCS'];
-    const randomSymbol = testStocks[Math.floor(Math.random() * testStocks.length)];
-    
-    setMessages(prev => [...prev, { id: 'user-test-' + Date.now(), type: 'user', content: `📊 Run AI Latency Benchmark on ${randomSymbol}` }]);
-    setIsTyping(true);
-
-    setTimeout(() => {
-      const stock = stocks.find(s => s.symbol.toUpperCase() === randomSymbol) || stocks[0] || {
-        symbol: randomSymbol, price: 1500, changePercent: 1.2, sector: 'IT', high: 1600, low: 1400, volume: 1000000
-      };
-
-      const result = runBenchmark(() => {
-        generateAnalysis(
-          stock.symbol,
-          stock.price,
-          stock.changePercent,
-          stock.sector,
-          stock.high,
-          stock.low,
-          stock.volume
-        );
-      }, 1000);
-
-      setIsTyping(false);
-      setMessages(prev => [...prev, {
-        id: 'bot-test-' + Date.now(),
-        type: 'bot',
-        content: (
-          <div className="space-y-3 text-sm">
-            <p className="font-bold text-green-400 flex items-center gap-1">
-              <Play className="w-4 h-4 text-green-400 animate-pulse" /> Latency Test Complete!
-            </p>
-            <p>Executed <strong>1,000 iterations</strong> of local sentiment & technical analysis on <strong>{stock.symbol}</strong>.</p>
-            <div className="bg-gray-900/80 p-3 rounded-lg border border-gray-700 font-mono text-xs space-y-1 text-gray-300">
-              <div className="flex justify-between"><span>Iterations:</span> <span className="text-white">1,000</span></div>
-              <div className="flex justify-between"><span>Avg Latency:</span> <span className="text-green-400">{(result.avgTimeMs).toFixed(4)} ms</span></div>
-              <div className="flex justify-between"><span>Min Latency:</span> <span className="text-green-400">{(result.minTimeMs).toFixed(4)} ms</span></div>
-              <div className="flex justify-between"><span>Max Latency:</span> <span className="text-yellow-400">{(result.maxTimeMs).toFixed(4)} ms</span></div>
-              <div className="flex justify-between"><span>95th Percentile:</span> <span className="text-green-400">{(result.p95TimeMs).toFixed(4)} ms</span></div>
-              <div className="flex justify-between"><span>Total Time:</span> <span className="text-white">{(result.totalTimeMs).toFixed(2)} ms</span></div>
-            </div>
-            <p className="text-[10px] text-gray-500 italic">This benchmark validates that local heuristic analysis runs well below the paper's claimed 50ms threshold.</p>
-          </div>
-        )
-      }]);
-    }, 500);
-  };
-
   const handleSend = async () => {
     if (!input.trim()) return;
 
@@ -372,13 +322,6 @@ export default function AIAssistant() {
 
             {/* Suggestion Chips */}
             <div className="px-4 py-2 bg-[#1f202e] border-t border-gray-800 flex gap-2 overflow-x-auto scrollbar-none text-xs">
-              <button 
-                onClick={runLatencyTest}
-                disabled={isTyping}
-                className="px-3 py-1 bg-blue-900/30 hover:bg-blue-900/50 border border-blue-700/40 text-blue-300 rounded-full flex-shrink-0 transition-colors flex items-center gap-1"
-              >
-                📊 Run Latency Test
-              </button>
               <button 
                 onClick={() => setInput('RELIANCE')}
                 disabled={isTyping}
