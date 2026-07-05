@@ -60,6 +60,7 @@ interface BentoItem {
     };
     size?: "sm" | "md" | "lg";
     className?: string;
+    upcoming?: boolean;
 }
 
 const bentoItems: BentoItem[] = [
@@ -90,6 +91,7 @@ const bentoItems: BentoItem[] = [
         typingText:
             "const createAgent = async () => {\n  const agent = new AIAgent({\n    model: 'gpt-4-turbo',\n    tools: [codeAnalysis, dataProcessing],\n    memory: new ConversationalMemory()\n  });\n\n  // Train on domain knowledge\n  await agent.learn(domainData);\n\n  return agent;\n};",
         size: "md",
+        upcoming: true,
         className: "col-span-2 row-span-1 col-start-1 col-end-3",
     },
     {
@@ -101,6 +103,7 @@ const bentoItems: BentoItem[] = [
         href: "#",
         feature: "icons",
         size: "md",
+        upcoming: true,
         className: "col-span-1 row-span-1",
     },
     {
@@ -605,9 +608,16 @@ const BentoCard = ({ item }: { item: BentoItem }) => {
                 >
                     <div className="flex flex-1 flex-col space-y-2">
                         <div className="flex items-center justify-between">
-                            <h3 className="font-semibold text-neutral-900 text-xl tracking-tight transition-colors duration-300 group-hover:text-neutral-700 dark:text-neutral-100 dark:group-hover:text-neutral-300">
-                                {item.title}
-                            </h3>
+                            <div className="flex items-center gap-2">
+                                <h3 className="font-semibold text-neutral-900 text-xl tracking-tight transition-colors duration-300 group-hover:text-neutral-700 dark:text-neutral-100 dark:group-hover:text-neutral-300">
+                                    {item.title}
+                                </h3>
+                                {item.upcoming && (
+                                    <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-[10px] font-semibold text-blue-700 shadow-sm dark:border-blue-800 dark:bg-blue-900/50 dark:text-blue-300">
+                                        In Progress
+                                    </span>
+                                )}
+                            </div>
                             <div className="text-neutral-400 opacity-0 transition-opacity duration-200 group-hover:opacity-100 dark:text-neutral-500">
                                 <ArrowUpRight className="h-5 w-5" />
                             </div>
@@ -709,9 +719,14 @@ export default function BentoGrid() {
                         >
                             <div className="p-5">
                                 <div className="mb-4 flex items-center justify-between">
-                                    <h3 className="font-semibold text-neutral-900 text-xl tracking-tight dark:text-neutral-100">
-                                        Voice Assistant
-                                    </h3>
+                                    <div className="flex items-center gap-2">
+                                        <h3 className="font-semibold text-neutral-900 text-xl tracking-tight dark:text-neutral-100">
+                                            Voice Assistant
+                                        </h3>
+                                        <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-[10px] font-semibold text-blue-700 shadow-sm dark:border-blue-800 dark:bg-blue-900/50 dark:text-blue-300">
+                                            Upcoming
+                                        </span>
+                                    </div>
                                 </div>
                                 <p className="mb-4 text-neutral-600 text-sm tracking-tight dark:text-neutral-400">
                                     Interact with our AI using natural voice commands. Experience
