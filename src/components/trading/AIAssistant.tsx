@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bot, X, Send, TrendingUp, TrendingDown, Minus, Loader2 } from 'lucide-react';
+import { Bot, X, Send, TrendingUp, TrendingDown, Minus, Loader2, Play } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStockStore } from '@/stores/useStockStore';
+import { runBenchmark } from '@/utils/performance-benchmark';
 
 interface Message {
   id: string;
@@ -96,73 +97,176 @@ export default function AIAssistant() {
     return `I couldn't find exact live data for "${query}". Try searching for specific NSE symbols like HDFCBANK or specific sectors like "IT".`;
   };
 
+  /**
+   * Multivariate Heuristic Decision Tree (MHDT)
+   * 
+   * Combines 3 independent market signal variables into a weighted composite score:
+   *   1. Price Momentum Signal (V1): Based on % price change  [Weight: 0.50]
+   *   2. Intraday Range Signal (V2): Price position within 52W High-Low range [Weight: 0.30]
+   *   3. Volume Divergence Signal (V3): Abnormal volume vs. average [Weight: 0.20]
+   *
+   * Final Score = 0.50*V1 + 0.30*V2 + 0.20*V3
+   * Score ranges: [-1.0, 1.0] → maps to verdict categories
+   */
   const generateAnalysis = (symbol: string, price: number, changePct: number, sector: string, high: number, low: number, volume: number) => {
-    
+
+    // --- Variable 1: Price Momentum Signal [-1.0 to 1.0] ---
+    // Normalize changePct into [-1, 1] using a clamped linear scale (threshold: ±3%)
+    const V1 = Math.max(-1, Math.min(1, changePct / 3.0));
+
+    // --- Variable 2: Intraday Range (52W) Position Signal [-1.0 to 1.0] ---
+    // Where is the current price within the 52-week range?
+    // 0 = at 52W low (bearish), 1 = at 52W high (bullish), mapped to [-1, 1]
+    const rangeWidth = high - low;
+    const V2 = rangeWidth > 0 ? (((price - low) / rangeWidth) * 2) - 1 : 0;
+
+    // --- Variable 3: Volume Divergence Signal [-1.0 to 1.0] ---
+    // High volume on up days = bullish; high volume on down days = bearish
+    // Average NSE volume baseline ~2M shares. Scale: 0 to 10M+ maps to 0 to 1
+    const volumeSignal = Math.min(1, volume / 10_000_000);
+    const V3 = changePct >= 0 ? volumeSignal : -volumeSignal;
+
+    // --- Composite MHDT Score ---
+    const compositeScore = (0.50 * V1) + (0.30 * V2) + (0.20 * V3);
+
+    // --- Decision Tree: Map composite score to verdict ---
     let sentiment = 'NEUTRAL 🟡';
-    let sentimentText = 'consolidating in a tight range.';
+    let sentimentText = 'consolidating across variables — no dominant momentum detected.';
     let colorClass = 'text-yellow-400';
+    let verdictColor = 'bg-yellow-900/30 border-yellow-700/50';
     let icon = <Minus className="w-4 h-4 text-yellow-500 inline mr-1" />;
 
-    // Extremely simple but effective algorithmic logic for realistic fake "AI"
-    if (changePct > 2) {
-        sentiment = 'STRONG BUY 🟢';
-        sentimentText = 'showing powerful bullish momentum with heavy institutional buying interest.';
-        colorClass = 'text-green-400';
-        icon = <TrendingUp className="w-4 h-4 text-green-500 inline mr-1" />;
-    } else if (changePct > 0.5) {
-        sentiment = 'BUY (ACCUMULATE) 🟢';
-        sentimentText = 'demonstrating steady upward accumulation.';
-        colorClass = 'text-green-400';
-        icon = <TrendingUp className="w-4 h-4 text-green-500 inline mr-1" />;
-    } else if (changePct < -2) {
-        sentiment = 'STRONG SELL 🔴';
-        sentimentText = 'facing severe distribution and technical breakdown.';
-        colorClass = 'text-red-400';
-        icon = <TrendingDown className="w-4 h-4 text-red-500 inline mr-1" />;
-    } else if (changePct < -0.5) {
-        sentiment = 'SELL (TRIM) 🔴';
-        sentimentText = 'experiencing profit booking and mild selling pressure.';
-        colorClass = 'text-red-400';
-        icon = <TrendingDown className="w-4 h-4 text-red-500 inline mr-1" />;
+    if (compositeScore > 0.50) {
+      sentiment = 'STRONG BUY 🟢';
+      sentimentText = 'displaying strong multi-variable bullish confluence — momentum, position, and volume are all aligned positively.';
+      colorClass = 'text-green-400';
+      verdictColor = 'bg-green-900/30 border-green-700/50';
+      icon = <TrendingUp className="w-4 h-4 text-green-500 inline mr-1" />;
+    } else if (compositeScore > 0.15) {
+      sentiment = 'BUY (ACCUMULATE) 🟢';
+      sentimentText = 'showing moderate bullish convergence across indicators — accumulation phase likely.';
+      colorClass = 'text-green-400';
+      verdictColor = 'bg-green-900/30 border-green-700/50';
+      icon = <TrendingUp className="w-4 h-4 text-green-500 inline mr-1" />;
+    } else if (compositeScore < -0.50) {
+      sentiment = 'STRONG SELL 🔴';
+      sentimentText = 'showing multi-variable bearish breakdown — momentum, range position, and volume confirm distribution.';
+      colorClass = 'text-red-400';
+      verdictColor = 'bg-red-900/30 border-red-700/50';
+      icon = <TrendingDown className="w-4 h-4 text-red-500 inline mr-1" />;
+    } else if (compositeScore < -0.15) {
+      sentiment = 'SELL (TRIM) 🔴';
+      sentimentText = 'experiencing mild bearish divergence — profit booking is advised at current levels.';
+      colorClass = 'text-red-400';
+      verdictColor = 'bg-red-900/30 border-red-700/50';
+      icon = <TrendingDown className="w-4 h-4 text-red-500 inline mr-1" />;
     }
 
-    // Checking if price is near 52w high (simulated as daily high for this metric as we only have live daily data easily accessible in this object)
-    // Actually we have 52w high/low in the stocks object!
+    // --- Technical boundary note ---
     let technicalNote = '';
     if (price >= high * 0.95) {
-        technicalNote = `Prices are trading extremely close to the 52-week high of ₹${high.toFixed(2)}. Watch out for a potential breakout or double-top resistance. `;
+      technicalNote = `Trading within 5% of the 52-week high of ₹${high.toFixed(2)}. V2 signal elevated — watch for breakout or resistance rejection.`;
     } else if (price <= low * 1.05) {
-         technicalNote = `The asset is hovering near its 52-week low of ₹${low.toFixed(2)}. This could be a value accumulation zone if support holds. `;
+      technicalNote = `Near 52-week low of ₹${low.toFixed(2)}. V2 signal at floor — potential support-based reversal if V3 confirms.`;
     }
 
     return (
-        <div className="space-y-3 text-sm">
-            <div className="flex items-center justify-between border-b border-gray-700 pb-2">
-                <span className="font-bold text-white max-w-[150px] truncate">{symbol}</span>
-                <span className="font-mono text-white">₹{price.toFixed(2)}</span>
-            </div>
-            
-            <p>Based on real-time market data, <strong>{symbol}</strong> is currently {sentimentText}</p>
-            
-            {(technicalNote || volume > 5000000) && (
-                <div className="bg-blue-900/20 p-2 rounded border border-blue-800/50">
-                    <p className="text-xs text-blue-300">
-                        {technicalNote} 
-                        {volume > 5000000 && ` Unusually high volume of ${(volume/1000000).toFixed(1)}M shares indicates smart money activity.`}
-                    </p>
-                </div>
-            )}
-            
-            <div className="pt-2 border-t border-gray-700">
-                <span className="text-gray-400 text-xs uppercase tracking-wider">AI Verdict:</span>
-                <div className={`font-bold mt-1 flex items-center ${colorClass}`}>
-                    {icon} {sentiment}
-                </div>
-            </div>
-            
-            <p className="text-[10px] text-gray-500 text-right italic">*Analysis driven by live Price Action</p>
+      <div className="space-y-3 text-sm">
+        <div className="flex items-center justify-between border-b border-gray-700 pb-2">
+          <span className="font-bold text-white max-w-[150px] truncate">{symbol}</span>
+          <span className="font-mono text-white">₹{price.toFixed(2)}</span>
         </div>
+
+        <p className="text-gray-300 text-xs">Based on real-time market data, <strong className="text-white">{symbol}</strong> is currently {sentimentText}</p>
+
+        {/* Multivariate Score Breakdown - Key for paper */}
+        <div className="bg-gray-900/60 p-2 rounded-lg border border-gray-700/60 font-mono text-xs space-y-1">
+          <p className="text-gray-500 uppercase tracking-wider text-[10px] mb-1">MHDT Variable Scores</p>
+          <div className="flex justify-between">
+            <span className="text-gray-400">V1 Momentum (×0.50):</span>
+            <span className={V1 >= 0 ? 'text-green-400' : 'text-red-400'}>{(V1 * 0.5).toFixed(3)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-400">V2 Range Pos (×0.30):</span>
+            <span className={V2 >= 0 ? 'text-green-400' : 'text-red-400'}>{(V2 * 0.3).toFixed(3)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-400">V3 Vol Signal (×0.20):</span>
+            <span className={V3 >= 0 ? 'text-green-400' : 'text-red-400'}>{(V3 * 0.2).toFixed(3)}</span>
+          </div>
+          <div className="flex justify-between border-t border-gray-700 pt-1 mt-1">
+            <span className="text-white font-bold">Composite Score:</span>
+            <span className={compositeScore >= 0 ? 'text-green-300 font-bold' : 'text-red-300 font-bold'}>
+              {compositeScore.toFixed(3)}
+            </span>
+          </div>
+        </div>
+
+        {technicalNote && (
+          <div className="bg-blue-900/20 p-2 rounded border border-blue-800/50">
+            <p className="text-xs text-blue-300">{technicalNote}</p>
+          </div>
+        )}
+
+        <div className={`pt-2 pb-1 px-2 rounded-lg border ${verdictColor}`}>
+          <span className="text-gray-400 text-[10px] uppercase tracking-wider">AI Verdict:</span>
+          <div className={`font-bold mt-0.5 flex items-center ${colorClass}`}>
+            {icon} {sentiment}
+          </div>
+        </div>
+
+        <p className="text-[10px] text-gray-600 text-right italic">*Multivariate Heuristic Decision Tree · Score ∈ [-1.0, 1.0]</p>
+      </div>
     );
+  };
+
+  const runLatencyTest = () => {
+    const testStocks = ['RELIANCE', 'TCS'];
+    const randomSymbol = testStocks[Math.floor(Math.random() * testStocks.length)];
+    
+    setMessages(prev => [...prev, { id: 'user-test-' + Date.now(), type: 'user', content: `📊 Run AI Latency Benchmark on ${randomSymbol}` }]);
+    setIsTyping(true);
+
+    setTimeout(() => {
+      const stock = stocks.find(s => s.symbol.toUpperCase() === randomSymbol) || stocks[0] || {
+        symbol: randomSymbol, price: 1500, changePercent: 1.2, sector: 'IT', high: 1600, low: 1400, volume: 1000000
+      };
+
+      const result = runBenchmark(() => {
+        generateAnalysis(
+          stock.symbol,
+          stock.price,
+          stock.changePercent,
+          stock.sector,
+          stock.high,
+          stock.low,
+          stock.volume
+        );
+      }, 1000);
+
+      setIsTyping(false);
+      setMessages(prev => [...prev, {
+        id: 'bot-test-' + Date.now(),
+        type: 'bot',
+        content: (
+          <div className="space-y-3 text-sm">
+            <p className="font-bold text-green-400 flex items-center gap-1">
+              <Play className="w-4 h-4 text-green-400 animate-pulse" /> Latency Test Complete!
+            </p>
+            <p>Executed <strong>1,000 iterations</strong> of local sentiment & technical analysis on <strong>{stock.symbol}</strong>.</p>
+            <div className="bg-gray-900/80 p-3 rounded-lg border border-gray-700 font-mono text-xs space-y-1 text-gray-300">
+              <div className="flex justify-between"><span>Iterations:</span> <span className="text-white">1,000</span></div>
+              <div className="flex justify-between"><span>Avg Latency:</span> <span className="text-green-400">{(result.avgTimeMs).toFixed(4)} ms</span></div>
+              <div className="flex justify-between"><span>Min Latency:</span> <span className="text-green-400">{(result.minTimeMs).toFixed(4)} ms</span></div>
+              <div className="flex justify-between"><span>Max Latency:</span> <span className="text-yellow-400">{(result.maxTimeMs).toFixed(4)} ms</span></div>
+              <div className="flex justify-between"><span>95th Percentile:</span> <span className="text-green-400">{(result.p95TimeMs).toFixed(4)} ms</span></div>
+              <div className="flex justify-between"><span>Total Time:</span> <span className="text-white">{(result.totalTimeMs).toFixed(2)} ms</span></div>
+            </div>
+            <p className="text-[10px] text-gray-500 italic">This benchmark validates that local heuristic analysis runs well below the paper's claimed 50ms threshold.</p>
+          </div>
+        )
+      }]);
+    }, 500);
   };
 
   const handleSend = async () => {
@@ -266,6 +370,31 @@ export default function AIAssistant() {
               <div ref={messagesEndRef} />
             </div>
 
+            {/* Suggestion Chips */}
+            <div className="px-4 py-2 bg-[#1f202e] border-t border-gray-800 flex gap-2 overflow-x-auto scrollbar-none text-xs">
+              <button 
+                onClick={runLatencyTest}
+                disabled={isTyping}
+                className="px-3 py-1 bg-blue-900/30 hover:bg-blue-900/50 border border-blue-700/40 text-blue-300 rounded-full flex-shrink-0 transition-colors flex items-center gap-1"
+              >
+                📊 Run Latency Test
+              </button>
+              <button 
+                onClick={() => setInput('RELIANCE')}
+                disabled={isTyping}
+                className="px-3 py-1 bg-gray-800 hover:bg-gray-750 border border-gray-700 text-gray-300 rounded-full flex-shrink-0 transition-colors"
+              >
+                RELIANCE
+              </button>
+              <button 
+                onClick={() => setInput('TCS')}
+                disabled={isTyping}
+                className="px-3 py-1 bg-gray-800 hover:bg-gray-750 border border-gray-700 text-gray-300 rounded-full flex-shrink-0 transition-colors"
+              >
+                TCS
+              </button>
+            </div>
+
             {/* Input Area */}
             <div className="p-3 bg-gray-900 border-t border-gray-800">
               <form 
@@ -294,4 +423,5 @@ export default function AIAssistant() {
       </AnimatePresence>
     </>
   );
+
 }

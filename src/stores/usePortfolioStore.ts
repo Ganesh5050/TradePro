@@ -35,13 +35,17 @@ const syncToSupabase = async (userId: string, userPortfolio: any) => {
     const investedValue = userPortfolio.holdings.reduce((sum: number, h: Portfolio) => sum + (h.quantity * h.avg_price), 0);
     const totalValue = userPortfolio.balance + investedValue;
 
-    await supabase
+    const { error } = await supabase
       .from('profiles')
       .update({ 
         total_pnl: totalValue,
         portfolio_data: userPortfolio 
       })
       .eq('id', userId);
+
+    if (error) {
+      console.error('Supabase update error:', error);
+    }
   } catch (error) {
     console.error('Failed to sync to Supabase:', error);
   }

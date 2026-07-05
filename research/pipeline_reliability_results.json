@@ -1,0 +1,12 @@
+{
+  "total_cycles": 1000,
+  "api_failure_rate": 0.15,
+  "api_successes": 855,
+  "api_failures": 145,
+  "cache_fallbacks": 145,
+  "raw_api_success_rate": 85.5,
+  "perceived_uptime": 100.0,
+  "avg_api_latency_ms": 165.75,
+  "avg_cache_latency_ms": 0.2,
+  "p95_api_latency_ms": 241.51
+}

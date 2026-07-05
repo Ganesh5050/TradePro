@@ -29,8 +29,39 @@ export interface Index {
     Low: number;
 }
 
+/**
+ * Pipeline Reliability Tracker
+ * Tracks every API call to calculate the actual success/failure rate.
+ * This data can be used directly in the research paper as evidence.
+ */
+export interface PipelineStats {
+    totalCycles: number;
+    successCycles: number;
+    failureCycles: number;
+    cacheFallbacks: number;
+    successRatePercent: number;
+}
+
 class GoogleSheetsService {
-    // Parse CSV properly handling quoted values
+    // In-memory cache for DFA State Reconciliation fallback
+    private cachedStocks: Stock[] = [];
+    private cachedIndices: Index[] = [];
+
+    // Reliability tracking for paper validation
+    private stats: PipelineStats = {
+        totalCycles: 0,
+        successCycles: 0,
+        failureCycles: 0,
+        cacheFallbacks: 0,
+        successRatePercent: 100,
+    };
+
+    /** Returns current pipeline reliability statistics */
+    getStats(): PipelineStats {
+        return { ...this.stats };
+    }
+
+    /** Parse CSV properly handling quoted values (DFA String Parser) */
     private parseCSVLine(line: string): string[] {
         const result: string[] = [];
         let current = '';
@@ -125,36 +156,57 @@ class GoogleSheetsService {
     }
 
     async fetchStocks(): Promise<Stock[]> {
+        this.stats.totalCycles++;
         try {
             console.log('📊 Fetching stocks directly from Google Sheets...');
-            const response = await axios.get(STOCKS_URL);
+            const response = await axios.get(STOCKS_URL, { timeout: 8000 });
 
             if (typeof response.data === 'string') {
                 const stocks = this.parseStocksCSV(response.data);
-                console.log(`✅ Fetched ${stocks.length} stocks from Google Sheets`);
-                return stocks;
+                if (stocks.length > 0) {
+                    // ✅ Success: update in-memory cache and record stats
+                    this.cachedStocks = stocks;
+                    this.stats.successCycles++;
+                    console.log(`✅ Fetched ${stocks.length} stocks from Google Sheets`);
+                    this.stats.successRatePercent = parseFloat(
+                        ((this.stats.successCycles / this.stats.totalCycles) * 100).toFixed(2)
+                    );
+                    return stocks;
+                }
             }
-            return [];
+            throw new Error('Empty or invalid CSV response');
         } catch (error) {
-            console.error('❌ Error fetching stocks:', error);
-            return [];
+            // ⚠️ Failure: serve from in-memory cache — zero perceived downtime for user
+            this.stats.failureCycles++;
+            this.stats.cacheFallbacks++;
+            this.stats.successRatePercent = parseFloat(
+                ((this.stats.successCycles / this.stats.totalCycles) * 100).toFixed(2)
+            );
+            console.warn(
+                `⚠️ Google Sheets API failed (cycle #${this.stats.totalCycles}). Serving ${this.cachedStocks.length} stocks from DFA cache. Error:`,
+                error
+            );
+            return this.cachedStocks;
         }
     }
 
     async fetchIndices(): Promise<Index[]> {
         try {
             console.log('📈 Fetching indices directly from Google Sheets...');
-            const response = await axios.get(INDICES_URL);
+            const response = await axios.get(INDICES_URL, { timeout: 8000 });
 
             if (typeof response.data === 'string') {
                 const indices = this.parseIndicesCSV(response.data);
-                console.log(`✅ Fetched ${indices.length} indices from Google Sheets`);
-                return indices;
+                if (indices.length > 0) {
+                    this.cachedIndices = indices;
+                    console.log(`✅ Fetched ${indices.length} indices from Google Sheets`);
+                    return indices;
+                }
             }
-            return [];
+            throw new Error('Empty or invalid CSV response');
         } catch (error) {
-            console.error('❌ Error fetching indices:', error);
-            return [];
+            console.warn('⚠️ Indices fetch failed. Serving from DFA cache.', error);
+            return this.cachedIndices;
         }
     }
 }
