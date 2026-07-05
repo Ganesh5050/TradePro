@@ -1,7 +1,10 @@
 import { Link } from "react-router-dom";
 import { BookOpen, ShieldCheck } from "lucide-react";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 const Footer = () => {
+  const { isAuthenticated } = useAuthStore();
+  
   return (
     <footer className="w-full bg-white border-t border-gray-100 py-6 mt-12">
       <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
@@ -11,13 +14,15 @@ const Footer = () => {
         </div>
         
         <div className="flex items-center gap-6">
-          <Link 
-            to="/research" 
-            className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors"
-          >
-            <BookOpen className="w-4 h-4" />
-            Academic Research Validation
-          </Link>
+          {!isAuthenticated && (
+            <Link 
+              to="/research" 
+              className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors"
+            >
+              <BookOpen className="w-4 h-4" />
+              Academic Research Validation
+            </Link>
+          )}
           
           <Link 
             to="/about" 

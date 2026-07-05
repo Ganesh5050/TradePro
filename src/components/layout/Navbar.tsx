@@ -385,6 +385,31 @@ const Navbar = () => {
                 <>
                   <div className="hidden md:flex items-center space-x-2">
                     <Link
+                      to="/research"
+                      className="relative flex items-center space-x-2 font-medium transition-all duration-200 group"
+                      style={{
+                        backgroundColor: 'rgb(236, 237, 241)',
+                        borderRadius: '50px',
+                        padding: '10px 16px'
+                      }}
+                    >
+                      <div
+                        style={{
+                          backgroundColor: 'rgba(0, 0, 0, 0)',
+                          borderRadius: '50px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          color: location.pathname === '/research' ? 'rgb(0, 125, 252)' : 'black',
+                          transition: 'all 0.2s ease'
+                        }}
+                        className="group-hover:!text-[rgb(0,125,252)]"
+                      >
+                        <BookOpen className="w-4 h-4" />
+                        <span>Research</span>
+                      </div>
+                    </Link>
+                    <Link
                       to="/about"
                       className="relative flex items-center space-x-2 font-medium transition-all duration-200 group"
                       style={{
@@ -501,6 +526,14 @@ const Navbar = () => {
                 </div>
               ) : (
                 <div className="space-y-2">
+                  <Link
+                    to="/research"
+                    className="block px-3 py-2 text-muted-foreground hover:text-foreground flex items-center gap-2"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <BookOpen className="w-4 h-4" />
+                    Research
+                  </Link>
                   <Link
                     to="/about"
                     className="block px-3 py-2 text-muted-foreground hover:text-foreground"
